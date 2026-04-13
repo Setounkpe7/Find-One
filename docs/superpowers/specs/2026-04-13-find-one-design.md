@@ -15,18 +15,24 @@ Find-One is a job application tracker. You save offers, log where they stand, an
 ## Git workflow
 
 ```
-dev  (all development happens here)
- ↓ push
+local development
+ ↓ git commit
+pre-commit hook: TruffleHog + pytest + vitest
+ → commit rejected if any check fails
+ ↓ all checks pass → git push to dev
 GitHub Action #1 auto-opens a PR (dev → main)
  ↓ PR opened
-GitHub Action #2 runs the full CI pipeline (tests + security scans + reports)
+GitHub Action #2 runs CI pipeline:
+  lint-and-test (blocks on failure) → security scans → reports
  ↓ you review code + security reports
 manual merge
  ↓ merge to main
 Vercel detects the push and deploys to production automatically
 ```
 
-There's no separate deploy stage in the pipeline. Vercel's native GitHub integration handles production deploys when code lands on `main`. The CI pipeline's job is to give you enough information to decide whether to merge — not to gate the deploy itself.
+There's no deploy stage in the pipeline. Vercel's native GitHub integration handles production deploys when code lands on `main`. The CI pipeline gives you enough information to decide whether to merge — not to gate the deploy itself.
+
+Code must be working before it's committed. The pre-commit hook enforces this locally. The CI pipeline is a second verification pass, not the primary safety net.
 
 ---
 
@@ -210,9 +216,41 @@ Every scan produces a timestamped JSON file (`tool_YYYY-MM-DD_HH-MM-SS.json`). A
 
 Scans do not block the pipeline. They produce reports. You decide whether to merge.
 
+### What blocks vs. what reports
+
+| Stage | Behavior on failure |
+|---|---|
+| `lint-and-test` | **Blocks the pipeline** — subsequent jobs do not run |
+| `security-scans` | Does not block — generates reports regardless |
+| `generate-reports` | Does not block — uploads available artifacts even if PDF generation fails |
+
+Tests must pass before anything else runs. Security findings are reported for your review, not used as a gate.
+
 ---
 
 ## CI/CD pipeline
+
+### Pre-commit hooks (local)
+
+Before any commit reaches `dev`, a pre-commit hook runs automatically on the developer's machine:
+
+```
+git commit triggered
+       ↓
+pre-commit hook
+  ├── TruffleHog  — scans staged files for secrets and credentials
+  ├── pytest      — full backend unit test suite
+  └── vitest      — full frontend unit test suite
+       ↓
+if any check fails → commit is rejected, nothing is pushed
+if all pass        → commit proceeds
+```
+
+This keeps secrets and broken code out of the git history entirely. By the time a push reaches `dev`, the code is already tested and clean. The CI pipeline on the PR is a second line of defense, not the first.
+
+The hooks are defined in `.pre-commit-config.yaml` and installed with `pre-commit install`. Every developer working on the repo runs `pre-commit install` once after cloning.
+
+---
 
 ### GitHub Action #1 — `auto-create-pr.yml`
 
