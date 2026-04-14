@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'
-
 export interface Template {
   id: string
   user_id: string
@@ -59,7 +57,7 @@ export function DocViewer({ jobOfferId, templates }: DocViewerProps) {
       }
       if (templateId) body.template_id = templateId
 
-      const response = await fetch(`${API_BASE}/api/documents/generate`, {
+      const response = await fetch(`${(import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'}/api/documents/generate`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),
@@ -83,7 +81,7 @@ export function DocViewer({ jobOfferId, templates }: DocViewerProps) {
         accumulated += chunk
 
         if (accumulated.includes('[DONE]')) {
-          const cleanText = accumulated.replace('[DONE]', '')
+          const cleanText = accumulated.replaceAll('[DONE]', '')
           setOutput(cleanText)
           break
         } else {
