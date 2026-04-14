@@ -9,6 +9,7 @@ from app.api import jobs as jobs_router
 from app.api import profile as profile_router
 from app.api import search as search_router
 from app.api import templates as templates_router
+from app.api import documents as documents_router
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Find-One API")
@@ -29,6 +30,7 @@ app.include_router(jobs_router.router)
 app.include_router(profile_router.router)
 app.include_router(search_router.router)
 app.include_router(templates_router.router)
+app.include_router(documents_router.router)
 
 
 @app.get("/health")
