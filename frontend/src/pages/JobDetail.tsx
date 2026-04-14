@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 import { JobForm } from '../components/JobForm'
+import { DocViewer } from '../components/DocViewer'
+import type { Template } from '../components/DocViewer'
 import { STATUS_LABELS, getStatusColor } from '../lib/types'
 import type { JobOffer } from '../lib/types'
 
@@ -54,6 +56,7 @@ export default function JobDetail() {
   const [error, setError] = useState<string | null>(null)
   const [showEdit, setShowEdit] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [templates, setTemplates] = useState<Template[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -64,6 +67,11 @@ export default function JobDetail() {
         setError(err instanceof Error ? err.message : 'Erreur de chargement.')
       )
       .finally(() => setLoading(false))
+
+    apiFetch('/api/templates')
+      .then((res) => res.json())
+      .then((data: Template[]) => setTemplates(data))
+      .catch(() => { /* non-blocking */ })
   }, [id])
 
   async function handleDelete() {
@@ -221,7 +229,7 @@ export default function JobDetail() {
               )}
             </div>
 
-            {/* DocViewer goes here - Task 17 */}
+            <DocViewer jobOfferId={id!} templates={templates} />
           </div>
         )}
       </div>
