@@ -194,7 +194,7 @@ GET  /api/*          → FastAPI middleware validates JWT
 | Category | Tool |
 |---|---|
 | Secrets scanning | TruffleHog |
-| SCA — Python | Safety |
+| SCA — Python | pip-audit |
 | SCA — JavaScript | npm audit |
 | SAST — Python | Bandit + Semgrep |
 | Compliance as code | Checkov (Dockerfile, docker-compose, GitHub Actions YAML) |
@@ -203,7 +203,7 @@ GET  /api/*          → FastAPI middleware validates JWT
 ### What they scan in this project
 
 - **TruffleHog** — git history and staged files for leaked secrets
-- **Safety** — Python dependencies in `requirements.txt`
+- **pip-audit** — Python dependencies in `requirements.txt`
 - **npm audit** — JavaScript dependencies in `package.json`
 - **Bandit** — Python code for common vulnerabilities (SQL injection, command injection, insecure crypto)
 - **Semgrep** — multi-language patterns across the whole codebase
@@ -267,7 +267,7 @@ lint-and-test
        ↓
 security-scans (parallel steps)
   ├── TruffleHog
-  ├── Safety
+  ├── pip-audit
   ├── npm audit
   ├── Bandit
   ├── Semgrep
