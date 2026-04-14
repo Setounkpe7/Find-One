@@ -17,9 +17,7 @@ echo "=== TruffleHog ==="
 trufflehog git file://. --json > "${REPORT_DIR}/trufflehog_${TIMESTAMP}.json" 2>&1 || true
 
 echo "=== pip-audit (Python SCA) ==="
-cd backend
-pip-audit -r requirements.txt -f json -o "../${REPORT_DIR}/pip-audit_${TIMESTAMP}.json" 2>&1 || true
-cd ..
+pip-audit -f json -o "${REPORT_DIR}/pip-audit_${TIMESTAMP}.json" 2>&1 || true
 
 echo "=== npm audit (JS SCA) ==="
 cd frontend
