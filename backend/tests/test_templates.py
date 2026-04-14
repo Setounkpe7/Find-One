@@ -35,3 +35,19 @@ def test_delete_template(client):
     template_id = create.json()["id"]
     response = client.delete(f"/api/templates/{template_id}")
     assert response.status_code == 204
+
+
+def test_delete_template_not_found(client):
+    response = client.delete("/api/templates/nonexistent-id")
+    assert response.status_code == 404
+
+
+def test_upload_template_rejects_invalid_extension(client):
+    import io
+    fake_file = io.BytesIO(b"not a real file")
+    response = client.post(
+        "/api/templates",
+        data={"name": "Bad File", "job_type": "test"},
+        files={"file": ("resume.txt", fake_file, "text/plain")},
+    )
+    assert response.status_code == 400
