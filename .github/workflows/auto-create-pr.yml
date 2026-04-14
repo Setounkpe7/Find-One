@@ -44,7 +44,7 @@ jobs:
       - name: Create PR
         if: steps.check_pr.outputs.pr_number == ''
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
         run: |
           gh pr create \
             --base main \
@@ -55,7 +55,7 @@ jobs:
       - name: Update PR description
         if: steps.check_pr.outputs.pr_number != ''
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
         run: |
           gh pr edit "${{ steps.check_pr.outputs.pr_number }}" \
             --body "${{ steps.summary.outputs.body }}"
