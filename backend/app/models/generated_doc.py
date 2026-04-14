@@ -1,6 +1,7 @@
 import enum
 import uuid
 from sqlalchemy import Column, String, Text, Enum, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -17,7 +18,7 @@ class GeneratedDocument(Base):
     user_id = Column(String, nullable=False, index=True)
     job_offer_id = Column(String, nullable=True)
     template_id = Column(String, nullable=True)
-    doc_type = Column(Enum(DocType), nullable=False)
+    doc_type: Mapped[DocType] = mapped_column(Enum(DocType), nullable=False)
     language = Column(String, nullable=False, default="fr")
     content = Column(Text, nullable=True)
     file_path = Column(String, nullable=True)

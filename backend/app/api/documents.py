@@ -24,7 +24,7 @@ def _find_best_template(
             .first()
         )
         if tmpl:
-            return parse_template(tmpl.file_path, tmpl.file_type.value), tmpl.id
+            return parse_template(str(tmpl.file_path), str(tmpl.file_type.value)), str(tmpl.id)
 
     tmpl = (
         db.query(Template)
@@ -59,17 +59,17 @@ async def generate_document(
     instructions = profile.generation_instructions if profile else ""
 
     template_content, used_template_id = _find_best_template(
-        user["user_id"], offer.title, body.template_id, db
+        user["user_id"], str(offer.title), body.template_id, db
     )
 
     prompt = build_prompt(
-        job_title=offer.title,
-        company=offer.company,
+        job_title=str(offer.title),
+        company=str(offer.company),
         doc_type=body.doc_type.value,
         language=body.language,
-        user_instructions=instructions or "",
+        user_instructions=str(instructions or ""),
         template_content=template_content,
-        job_description=offer.notes or "",
+        job_description=str(offer.notes or ""),
     )
 
     doc = GeneratedDocument(

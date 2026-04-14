@@ -1,6 +1,7 @@
 import enum
 import uuid
 from sqlalchemy import Column, String, Enum, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -18,5 +19,5 @@ class Template(Base):
     name = Column(String, nullable=False)
     job_type = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
-    file_type = Column(Enum(FileType), nullable=False)
+    file_type: Mapped[FileType] = mapped_column(Enum(FileType), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
