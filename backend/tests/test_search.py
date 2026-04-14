@@ -15,6 +15,11 @@ def test_scrape_url_returns_job_data(client):
     assert "title" in data
 
 
+def test_scrape_url_rejects_non_http_scheme(client):
+    response = client.post("/api/search/url", json={"url": "file:///etc/passwd"})
+    assert response.status_code == 422
+
+
 def test_jsearch_returns_results(client):
     mock_results = [
         {"job_title": "Python Dev", "employer_name": "Tech Co", "job_apply_link": "https://example.com/apply"},
