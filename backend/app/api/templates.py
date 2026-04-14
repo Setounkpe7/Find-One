@@ -27,7 +27,8 @@ async def upload_template(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    filename = file.filename or ""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are accepted")
 
@@ -43,7 +44,7 @@ async def upload_template(
     finally:
         os.unlink(tmp_path)
 
-    file_path = upload_file(file_bytes, file.filename)
+    file_path = upload_file(file_bytes, filename)
     template = Template(
         user_id=user["user_id"],
         name=name,

@@ -21,6 +21,8 @@ def test_upload_template(client):
     data = response.json()
     assert data["name"] == "Backend CV"
     assert data["job_type"] == "backend_developer"
+    assert data["file_type"] == "pdf"
+    assert data["file_path"] == "storage/templates/test.pdf"
 
 
 def test_delete_template(client):
@@ -43,7 +45,6 @@ def test_delete_template_not_found(client):
 
 
 def test_upload_template_rejects_invalid_extension(client):
-    import io
     fake_file = io.BytesIO(b"not a real file")
     response = client.post(
         "/api/templates",
