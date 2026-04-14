@@ -7,6 +7,7 @@ from app.config import settings
 from app.api.auth import router as auth_router
 from app.api import jobs as jobs_router
 from app.api import profile as profile_router
+from app.api import search as search_router
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Find-One API")
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(jobs_router.router)
 app.include_router(profile_router.router)
+app.include_router(search_router.router)
 
 
 @app.get("/health")
