@@ -14,7 +14,6 @@ htmlcov/
 
 # Node
 node_modules/
-dist/
 .vite/
 
 # Database
@@ -26,6 +25,8 @@ dist/
 *.swp
 
 # Secrets — never commit these
-.env.local
-.env.production
+.env.*
+!.env.example
 vault-data/
+.idea/
+.vscode/
