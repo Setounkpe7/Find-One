@@ -1,5 +1,5 @@
 import anthropic
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 from app.config import settings
 
 
@@ -31,11 +31,7 @@ Langue de rédaction : {language}
 Génère un(e) {doc_label} adapté(e) à cette offre d'emploi. Respecte les instructions de l'utilisateur. Sois concis et professionnel."""
 
 
-async def stream_generation(
-    prompt: str,
-    instructions: str = "",
-    template_content: str = "",
-) -> AsyncIterator[str]:
+async def stream_generation(prompt: str) -> AsyncIterator[str]:
     client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
     async with client.messages.stream(
         model="claude-opus-4-6",

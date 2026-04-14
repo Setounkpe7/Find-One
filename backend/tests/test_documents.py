@@ -15,7 +15,7 @@ def test_generate_document_streams_response(client, db):
 
     mock_stream_chunks = ["Hello ", "world", "!"]
 
-    async def fake_stream(prompt, instructions, template_content):
+    async def fake_stream(prompt):
         for chunk in mock_stream_chunks:
             yield chunk
 
@@ -26,6 +26,8 @@ def test_generate_document_streams_response(client, db):
             "language": "fr",
         })
     assert response.status_code == 200
+    assert "Hello " in response.text
+    assert "[DONE]" in response.text
 
 
 def test_generation_prompt_includes_job_details(client):

@@ -71,11 +71,15 @@ async def generate_document(
 
     async def generate():
         full_content = []
-        async for chunk in stream_generation(prompt, instructions, template_content):
-            full_content.append(chunk)
-            yield f"data: {chunk}\n\n"
-        doc.content = "".join(full_content)
-        db.commit()
-        yield "data: [DONE]\n\n"
+        try:
+            async for chunk in stream_generation(prompt):
+                full_content.append(chunk)
+                yield f"data: {chunk}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception:
+            yield "data: [ERROR]\n\n"
+        finally:
+            doc.content = "".join(full_content)
+            db.commit()
 
     return StreamingResponse(generate(), media_type="text/event-stream")
