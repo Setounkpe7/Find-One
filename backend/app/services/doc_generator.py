@@ -36,11 +36,11 @@ async def stream_generation(
     instructions: str = "",
     template_content: str = "",
 ) -> AsyncIterator[str]:
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-    with client.messages.stream(
+    client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+    async with client.messages.stream(
         model="claude-opus-4-6",
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
     ) as stream:
-        for text in stream.text_stream:
+        async for text in stream.text_stream:
             yield text
