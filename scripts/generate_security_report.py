@@ -3,6 +3,7 @@
 Consolidates JSON security scan reports into a single PDF (or HTML fallback).
 Usage: python scripts/generate_security_report.py <report_dir>
 """
+import html as html_module
 import json
 import sys
 from datetime import datetime
@@ -25,10 +26,12 @@ def build_html(reports: dict, timestamp: str) -> str:
     sections = []
     for tool, data in reports.items():
         content = json.dumps(data, indent=2, ensure_ascii=False)[:5000]
+        tool_escaped = html_module.escape(tool.upper())
+        content_escaped = html_module.escape(content)
         sections.append(f"""
         <section>
-          <h2>{tool.upper()}</h2>
-          <pre>{content}</pre>
+          <h2>{tool_escaped}</h2>
+          <pre>{content_escaped}</pre>
         </section>
         """)
 
@@ -59,6 +62,10 @@ def main():
         sys.exit(1)
 
     report_dir = sys.argv[1]
+    report_dir = str(Path(report_dir).resolve())
+    if not Path(report_dir).is_dir():
+        print(f"Error: {report_dir} is not a directory.")
+        sys.exit(1)
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     reports = load_reports(report_dir)
@@ -80,8 +87,10 @@ def main():
         from weasyprint import HTML
         HTML(filename=html_path).write_pdf(pdf_path)
         print(f"PDF report: {pdf_path}")
+    except ImportError:
+        print(f"WeasyPrint not installed. HTML report at: {html_path}")
     except Exception as e:
-        print(f"WeasyPrint not available ({e}). HTML report at: {html_path}")
+        print(f"PDF generation failed ({e}). HTML report at: {html_path}")
 
 
 if __name__ == "__main__":
