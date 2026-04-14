@@ -19,7 +19,7 @@ def test_jsearch_returns_results(client):
     mock_results = [
         {"job_title": "Python Dev", "employer_name": "Tech Co", "job_apply_link": "https://example.com/apply"},
     ]
-    with patch("app.services.jsearch.search_jobs", return_value=mock_results):
+    with patch("app.api.search.search_jobs", return_value=mock_results):
         response = client.get("/api/search/jobs?query=python+developer&page=1")
     assert response.status_code == 200
     assert len(response.json()) >= 1
