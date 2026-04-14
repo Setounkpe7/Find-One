@@ -42,7 +42,10 @@ def test_delete_job_offer(client):
 def test_cannot_access_other_users_job(client):
     create = client.post("/api/jobs", json={"title": "My Job", "company": "Co", "status": "to_apply", "source": "manual"})
     job_id = create.json()["id"]
-    # Simulate a different user
+    original = client.app.dependency_overrides[get_current_user]
     client.app.dependency_overrides[get_current_user] = lambda: {"user_id": "other-user", "email": "other@example.com"}
-    response = client.get(f"/api/jobs/{job_id}")
-    assert response.status_code == 404
+    try:
+        response = client.get(f"/api/jobs/{job_id}")
+        assert response.status_code == 404
+    finally:
+        client.app.dependency_overrides[get_current_user] = original

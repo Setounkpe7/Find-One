@@ -14,7 +14,7 @@ def create_job(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    offer = JobOffer(**body.model_dump(), user_id=user["user_id"])
+    offer = JobOffer(**body.model_dump(exclude_unset=True), user_id=user["user_id"])
     db.add(offer)
     db.commit()
     db.refresh(offer)
