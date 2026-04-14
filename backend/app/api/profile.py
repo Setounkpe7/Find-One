@@ -13,14 +13,15 @@ def _get_or_create_profile(user_id: str, db: Session) -> UserProfile:
     if not profile:
         profile = UserProfile(user_id=user_id)
         db.add(profile)
-        db.commit()
-        db.refresh(profile)
     return profile
 
 
 @router.get("", response_model=UserProfileOut)
 def get_profile(db: Session = Depends(get_db), user: dict = Depends(get_current_user)):
-    return _get_or_create_profile(user["user_id"], db)
+    profile = _get_or_create_profile(user["user_id"], db)
+    db.commit()
+    db.refresh(profile)
+    return profile
 
 
 @router.put("", response_model=UserProfileOut)
