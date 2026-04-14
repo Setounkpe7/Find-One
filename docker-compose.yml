@@ -5,7 +5,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: findone
-      POSTGRES_PASSWORD: findone
+      POSTGRES_PASSWORD: findone  # dev-only — use .env for any real environment
       POSTGRES_DB: findone
     ports:
       - "5432:5432"
@@ -20,15 +20,16 @@ services:
   vault:
     image: hashicorp/vault:1.16
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: dev-root-token
+      VAULT_DEV_ROOT_TOKEN_ID: dev-root-token  # dev mode only — never use in production
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
     ports:
       - "8200:8200"
     cap_add:
-      - IPC_LOCK
+      - IPC_LOCK  # prevents Vault secrets from being swapped to disk
 
   backend:
     build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     env_file:
