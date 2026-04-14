@@ -14,9 +14,9 @@ function isFollowupDue(followup_date: string | null, status: string): boolean {
 
 function isInterviewSoon(interview_date: string | null): boolean {
   if (!interview_date) return false
-  const now = Date.now()
+  const todayStart = new Date(new Date().toISOString().split('T')[0] + 'T00:00:00').getTime()
   const interviewTime = new Date(interview_date + 'T00:00:00').getTime()
-  return interviewTime >= now && interviewTime <= now + 48 * 60 * 60 * 1000
+  return interviewTime >= todayStart && interviewTime <= todayStart + 48 * 60 * 60 * 1000
 }
 
 const badgeBase: React.CSSProperties = {

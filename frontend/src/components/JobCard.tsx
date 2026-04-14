@@ -116,9 +116,6 @@ const statusLabelStyle = (color: string): React.CSSProperties => ({
   border: `1px solid ${color}30`,
 })
 
-const badgeRowStyle: React.CSSProperties = {
-  marginTop: '10px',
-}
 
 export function JobCard({ offer, onClick }: JobCardProps) {
   const accentColor = getAccentColor(offer.status)
@@ -176,15 +173,11 @@ export function JobCard({ offer, onClick }: JobCardProps) {
         </span>
       </div>
 
-      {(offer.followup_date || offer.interview_date) && (
-        <div style={badgeRowStyle}>
-          <StatusBadge
-            followup_date={offer.followup_date ?? null}
-            interview_date={offer.interview_date ?? null}
-            status={offer.status}
-          />
-        </div>
-      )}
+      <StatusBadge
+        status={offer.status}
+        followup_date={offer.followup_date ?? null}
+        interview_date={offer.interview_date ?? null}
+      />
     </div>
   )
 }
