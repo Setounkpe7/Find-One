@@ -42,5 +42,17 @@ semgrep scan --config=auto --json --output="${REPORT_DIR}/semgrep_${TIMESTAMP}.j
 # docker run -t owasp/zap2docker-stable zap-baseline.py -t http://localhost:8000 -J "${REPORT_DIR}/zap_${TIMESTAMP}.json" || true
 
 echo ""
+echo "=== Security Report (PDF) ==="
+PYTHON=$(command -v python3)
+# Prefer conda/venv python if available (needs weasyprint)
+for candidate in "$HOME/.miniforge3/bin/python3" "$HOME/.venv/bin/python3"; do
+    if [ -x "$candidate" ] && "$candidate" -c "import weasyprint" 2>/dev/null; then
+        PYTHON="$candidate"
+        break
+    fi
+done
+"$PYTHON" "${REPO_ROOT}/scripts/generate_security_report.py" "$REPORT_DIR" || true
+
+echo ""
 echo "Reports saved to ${REPORT_DIR}/"
 echo "Review for HIGH or CRITICAL findings before committing."
