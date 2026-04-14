@@ -32,7 +32,9 @@ def register(body: RegisterRequest):
 def login(body: LoginRequest):
     try:
         supabase = _get_supabase_client()
-        result = supabase.auth.sign_in_with_password({"email": body.email, "password": body.password})
+        result = supabase.auth.sign_in_with_password(
+            {"email": body.email, "password": body.password}
+        )
         if result.user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         return TokenResponse(

@@ -14,13 +14,23 @@ from app.services.template_parser import parse_template
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 
-def _find_best_template(user_id: str, job_type: str, template_id: str | None, db: Session) -> tuple[str, str | None]:
+def _find_best_template(
+    user_id: str, job_type: str, template_id: str | None, db: Session
+) -> tuple[str, str | None]:
     if template_id:
-        tmpl = db.query(Template).filter(Template.id == template_id, Template.user_id == user_id).first()
+        tmpl = (
+            db.query(Template)
+            .filter(Template.id == template_id, Template.user_id == user_id)
+            .first()
+        )
         if tmpl:
             return parse_template(tmpl.file_path, tmpl.file_type.value), tmpl.id
 
-    tmpl = db.query(Template).filter(Template.user_id == user_id, Template.job_type == job_type).first()
+    tmpl = (
+        db.query(Template)
+        .filter(Template.user_id == user_id, Template.job_type == job_type)
+        .first()
+    )
     if tmpl:
         return parse_template(tmpl.file_path, tmpl.file_type.value), tmpl.id
 
@@ -37,7 +47,11 @@ async def generate_document(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    offer = db.query(JobOffer).filter(JobOffer.id == body.job_offer_id, JobOffer.user_id == user["user_id"]).first()
+    offer = (
+        db.query(JobOffer)
+        .filter(JobOffer.id == body.job_offer_id, JobOffer.user_id == user["user_id"])
+        .first()
+    )
     if not offer:
         raise HTTPException(status_code=404, detail="Job offer not found")
 

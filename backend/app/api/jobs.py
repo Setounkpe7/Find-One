@@ -35,7 +35,11 @@ def get_job(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    offer = db.query(JobOffer).filter(JobOffer.id == job_id, JobOffer.user_id == user["user_id"]).first()
+    offer = (
+        db.query(JobOffer)
+        .filter(JobOffer.id == job_id, JobOffer.user_id == user["user_id"])
+        .first()
+    )
     if not offer:
         raise HTTPException(status_code=404, detail="Job offer not found")
     return offer
@@ -48,7 +52,11 @@ def update_job(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    offer = db.query(JobOffer).filter(JobOffer.id == job_id, JobOffer.user_id == user["user_id"]).first()
+    offer = (
+        db.query(JobOffer)
+        .filter(JobOffer.id == job_id, JobOffer.user_id == user["user_id"])
+        .first()
+    )
     if not offer:
         raise HTTPException(status_code=404, detail="Job offer not found")
     for field, value in body.model_dump(exclude_unset=True).items():
@@ -64,7 +72,11 @@ def delete_job(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    offer = db.query(JobOffer).filter(JobOffer.id == job_id, JobOffer.user_id == user["user_id"]).first()
+    offer = (
+        db.query(JobOffer)
+        .filter(JobOffer.id == job_id, JobOffer.user_id == user["user_id"])
+        .first()
+    )
     if not offer:
         raise HTTPException(status_code=404, detail="Job offer not found")
     db.delete(offer)
