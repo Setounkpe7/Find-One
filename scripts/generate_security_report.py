@@ -34,7 +34,7 @@ def sev_badge(level: str) -> str:
 # ── Per-tool parsers ──────────────────────────────────────────────────────────
 
 def parse_trufflehog(raw: str) -> dict:
-    """JSONL format — one JSON object per line."""
+    """JSONL format — one JSON object per line. Only verified secrets are reported."""
     findings = []
     for line in raw.strip().splitlines():
         try:
@@ -43,14 +43,15 @@ def parse_trufflehog(raw: str) -> dict:
             continue
         if "DetectorName" not in obj:
             continue  # skip info/summary lines
+        if not obj.get("Verified", False):
+            continue  # skip unverified detections
         git = obj.get("SourceMetadata", {}).get("Data", {}).get("Git", {})
         findings.append({
-            "detector":  obj.get("DetectorName", "Unknown"),
-            "file":      git.get("file", ""),
-            "commit":    git.get("commit", "")[:10],
-            "line":      git.get("line", ""),
-            "raw":       obj.get("Raw", ""),
-            "verified":  obj.get("Verified", False),
+            "detector": obj.get("DetectorName", "Unknown"),
+            "file":     git.get("file", ""),
+            "commit":   git.get("commit", "")[:10],
+            "line":     git.get("line", ""),
+            "raw":      obj.get("Raw", ""),
         })
     return {"findings": findings, "total": len(findings)}
 
@@ -146,34 +147,24 @@ def parse_semgrep(data: dict) -> dict:
 def section_trufflehog(data: dict) -> str:
     findings = data["findings"]
     if not findings:
-        return "<p class='clean'>✅ No secrets detected.</p>"
+        return "<p class='clean'>✅ No verified secrets detected.</p>"
     rows = ""
     for f in findings:
-        verified_label = sev_badge("high") if f["verified"] else sev_badge("info")
-        status = "VERIFIED LEAK" if f["verified"] else "Unverified"
         rows += f"""
         <tr>
-          <td>{verified_label} {html_module.escape(status)}</td>
+          <td>{sev_badge('high')} VERIFIED LEAK</td>
           <td>{html_module.escape(f['detector'])}</td>
           <td>{html_module.escape(f['file'])} line {f['line']}</td>
           <td><code>{html_module.escape(f['raw'][:80])}</code></td>
           <td>{html_module.escape(f['commit'])}</td>
         </tr>"""
-    rec = (
-        "<p class='rec'><strong>Recommandation :</strong> "
-        "Révoquer immédiatement les secrets détectés, les remplacer par des variables "
-        "d'environnement, et utiliser <code>git filter-repo</code> pour purger l'historique.</p>"
-        if any(f["verified"] for f in findings) else
-        "<p class='rec'><strong>Recommandation :</strong> "
-        "Ces détections sont non-vérifiées. Vérifier manuellement que "
-        "<code>postgresql://findone:findone@db:5432</code> n'est utilisé qu'en développement local "
-        "et n'est pas exposé en production.</p>"
-    )
     return f"""
     <table><thead><tr>
       <th>Statut</th><th>Détecteur</th><th>Fichier</th><th>Valeur</th><th>Commit</th>
     </tr></thead><tbody>{rows}</tbody></table>
-    {rec}"""
+    <p class='rec rec-high'><strong>⚠️ CRITIQUE :</strong> Révoquer immédiatement les secrets
+    détectés, les remplacer par des variables d'environnement, et utiliser
+    <code>git filter-repo</code> pour purger l'historique.</p>"""
 
 
 def section_pipaudit(data: dict) -> str:
