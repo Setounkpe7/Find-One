@@ -3,10 +3,10 @@ from unittest.mock import patch
 from app.services.auth import validate_supabase_jwt
 
 
-def test_protected_endpoint_without_token_returns_401_or_403(client):
+def test_health_endpoint_requires_no_auth(client):
     client.app.dependency_overrides.clear()
     response = client.get("/health")
-    # health endpoint has no auth, so should still be 200
+    # health endpoint has no auth requirement, so should return 200
     assert response.status_code == 200
 
 

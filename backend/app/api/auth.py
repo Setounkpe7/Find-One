@@ -24,8 +24,8 @@ def register(body: RegisterRequest):
         )
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Registration failed")
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -42,5 +42,5 @@ def login(body: LoginRequest):
         )
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=401, detail="Authentication failed")
