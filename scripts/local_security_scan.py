@@ -151,7 +151,8 @@ def count_findings(result: dict) -> tuple[int, int, int]:
         return total, high, 0
 
     if name == "TruffleHog":
-        items = data if isinstance(data, list) else []
+        # Real findings have DetectorName; log lines have a "level" field — filter them out
+        items = [i for i in (data if isinstance(data, list) else []) if "DetectorName" in i]
         return len(items), len(items), 0
 
     if name == "Semgrep":
@@ -276,7 +277,8 @@ def build_tool_section(result: dict) -> str:
         )
 
     if name == "TruffleHog":
-        items = data if isinstance(data, list) else []
+        # Filter out TruffleHog log lines — real findings always have DetectorName
+        items = [i for i in (data if isinstance(data, list) else []) if "DetectorName" in i]
         if not items:
             return f"<h2>{_esc(name)}</h2><p>No verified secrets found.</p>\n"
         rows = "".join(

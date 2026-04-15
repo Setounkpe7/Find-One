@@ -120,10 +120,9 @@ jobs:
           pip install trufflehog3 2>/dev/null || pip install trufflehog 2>/dev/null || true
           trufflehog git file://. --only-verified --json \
             > "${REPORT_DIR}/trufflehog_${TS}.json" 2>&1 || true
-          # Block if verified secrets were found (non-empty output = at least one secret)
-          if [ -s "${REPORT_DIR}/trufflehog_${TS}.json" ]; then
+          # Real findings contain "DetectorName"; log lines contain "level" — grep distinguishes them
+          if grep -q '"DetectorName"' "${REPORT_DIR}/trufflehog_${TS}.json" 2>/dev/null; then
             echo "::error::TruffleHog found verified secrets in git history."
-            cat "${REPORT_DIR}/trufflehog_${TS}.json"
             exit 1
           fi
 
