@@ -332,8 +332,8 @@ Each Dependabot PR goes through the full CI pipeline. Blocking scans catch any v
 ### Branch protection (`main`)
 
 Configured in GitHub Settings → Branches (manual, not in code):
-- Require 1 approving review before merge
 - Require `lint-and-test` status check to pass
+- Require `security-scans` status check to pass
 - Require branches to be up to date before merging
 - Disallow force-push and deletion
 

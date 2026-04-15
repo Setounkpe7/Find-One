@@ -826,6 +826,7 @@ Go to **GitHub → Find-One repo → Settings → Branches → Add branch rulese
   - [x] Require 1 approving review
 - [x] Require status checks to pass before merging
   - Add `Lint & Test` as a required check
+  - Add `Security Scans` as a required check
 - [x] Require branches to be up to date before merging
 - [x] Do not allow bypassing the above settings
 - [x] Restrict force pushes (leave unchecked = force push blocked)
