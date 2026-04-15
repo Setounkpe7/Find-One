@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { FormEvent, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
-import { authStyles as s } from './authStyles'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Field } from '../components/ui/Field'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -9,81 +11,126 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
     try {
       await useAuthStore.getState().login(email, password)
       navigate('/')
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Identifiants invalides')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={s.root}>
-      <div style={s.panel}>
-        <div style={s.brand}>
-          <span style={s.brandMark}>Find·One</span>
-          <h1 style={s.heading}>Sign in</h1>
-          <p style={s.sub}>Track every application. Miss nothing.</p>
+    <div className="auth-split">
+      <div className="auth-brand">
+        <div>
+          <div className="brand-logo">
+            Find<span>·</span>One
+          </div>
+          <div className="brand-logo-sub">Votre parcours, votre récit</div>
         </div>
 
-        <hr style={s.divider} />
-
-        <form onSubmit={handleSubmit} style={s.form}>
-          <div style={s.fieldGroup}>
-            <label htmlFor="email" style={s.label}>Email</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
-              style={{ ...s.input, ...(focusedField === 'email' ? s.inputFocus : {}) }}
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div style={s.fieldGroup}>
-            <label htmlFor="password" style={s.label}>Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocusedField('password')}
-              onBlur={() => setFocusedField(null)}
-              style={{ ...s.input, ...(focusedField === 'password' ? s.inputFocus : {}) }}
-              placeholder="••••••••"
-            />
-          </div>
-
-          {error && <div style={s.error}>{error}</div>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ ...s.submit, ...(loading ? s.submitDisabled : {}) }}
+        <div style={{ maxWidth: 440 }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontStyle: 'italic',
+              fontSize: 34,
+              lineHeight: 1.25,
+              color: 'var(--beige)',
+              marginBottom: 24,
+            }}
           >
-            {loading ? 'Signing in...' : 'Sign in →'}
-          </button>
-        </form>
+            Chaque candidature est une{' '}
+            <em style={{ color: 'var(--terracotta-l)' }}>page</em> du livre que
+            vous êtes en train d'écrire.
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: 'var(--sand)',
+              letterSpacing: 1.5,
+              textTransform: 'uppercase',
+            }}
+          >
+            <strong
+              style={{
+                color: 'var(--beige)',
+                display: 'block',
+                marginBottom: 4,
+                textTransform: 'none',
+                fontSize: 14,
+              }}
+            >
+              Find-One
+            </strong>
+            Le compagnon de votre recherche d'emploi
+          </div>
+        </div>
 
-        <p style={s.footer}>
-          No account?{' '}
-          <Link to="/register" style={s.link}>Create one</Link>
-        </p>
+        <div className="brand-footer">
+          <span>© 2026 Find-One</span>
+        </div>
+      </div>
+
+      <div className="auth-form-side">
+        <div className="auth-form-inner">
+          <div className="auth-eyebrow">Connexion</div>
+          <h1 className="auth-title">
+            Reprenons là où vous vous étiez <em>arrêté</em>.
+          </h1>
+          <p className="auth-sub">
+            Connectez-vous pour retrouver vos candidatures, vos modèles et vos
+            documents générés.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            <Field label="Adresse e-mail" htmlFor="email">
+              <Input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="vous@exemple.com"
+              />
+            </Field>
+
+            <Field
+              label="Mot de passe"
+              htmlFor="password"
+              error={error ?? undefined}
+            >
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            </Field>
+
+            <Button
+              type="submit"
+              variant="primary"
+              className="auth-submit"
+              disabled={loading}
+            >
+              {loading ? 'Connexion…' : 'Se connecter'}
+            </Button>
+          </form>
+
+          <div className="auth-switch">
+            Nouveau sur Find-One ? <Link to="/register">Créer un compte</Link>
+          </div>
+        </div>
       </div>
     </div>
   )
