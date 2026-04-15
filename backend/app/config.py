@@ -1,8 +1,16 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Look for .env in repo root (parent of backend/), then in CWD as fallback.
+# This keeps working whether uvicorn is launched from repo root or from backend/.
+_REPO_ROOT_ENV = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(
+        env_file=(str(_REPO_ROOT_ENV), ".env"),
+        extra="ignore",
+    )
 
     database_url: str = "postgresql://findone:findone@localhost:5432/findone"
     supabase_url: str = ""

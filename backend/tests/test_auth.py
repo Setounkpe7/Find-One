@@ -10,12 +10,45 @@ def test_health_endpoint_requires_no_auth(client):
     assert response.status_code == 200
 
 
-def test_validate_jwt_returns_user_id():
+def test_validate_jwt_hs256_returns_user_id():
     fake_payload = {"sub": "user-123", "email": "user@example.com"}
-    with patch("app.services.auth.pyjwt.decode", return_value=fake_payload):
+    with patch(
+        "app.services.auth.pyjwt.get_unverified_header",
+        return_value={"alg": "HS256"},
+    ), patch("app.services.auth.pyjwt.decode", return_value=fake_payload):
         result = validate_supabase_jwt("fake.token.here")
     assert result["user_id"] == "user-123"
     assert result["email"] == "user@example.com"
+
+
+def test_validate_jwt_es256_uses_jwks():
+    """Modern Supabase projects sign with ES256 via JWKS — verify the path."""
+    fake_payload = {"sub": "user-456", "email": "user2@example.com"}
+
+    class FakeKey:
+        key = "fake-public-key"
+
+    class FakeJwksClient:
+        def get_signing_key_from_jwt(self, token):
+            return FakeKey()
+
+    with patch(
+        "app.services.auth.pyjwt.get_unverified_header",
+        return_value={"alg": "ES256"},
+    ), patch(
+        "app.services.auth._get_jwks_client", return_value=FakeJwksClient()
+    ), patch("app.services.auth.pyjwt.decode", return_value=fake_payload):
+        result = validate_supabase_jwt("fake.token.here")
+    assert result["user_id"] == "user-456"
+
+
+def test_validate_jwt_rejects_unsupported_algorithm():
+    with patch(
+        "app.services.auth.pyjwt.get_unverified_header",
+        return_value={"alg": "none"},
+    ):
+        with pytest.raises(ValueError, match="Unsupported JWT algorithm"):
+            validate_supabase_jwt("any.token.here")
 
 
 def test_validate_jwt_raises_on_invalid_token():
