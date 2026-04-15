@@ -198,33 +198,44 @@ GET  /api/*          → FastAPI middleware validates JWT
 | SCA — JavaScript | npm audit |
 | SAST — Python | Bandit + Semgrep |
 | Compliance as code | Checkov (Dockerfile, docker-compose, GitHub Actions YAML) |
-| DAST | OWASP ZAP (CLI mode, runs against the local Docker stack) |
+| DAST | OWASP ZAP (baseline scan against backend with real test DB in CI) |
+| Container scanning | Trivy (scans the backend Docker image for CVEs) |
+| SBOM | anchore/sbom-action (generates a Software Bill of Materials on every PR) |
+| Dependency updates | Dependabot (weekly PRs for pip, npm, and GitHub Actions) |
 
 ### What they scan in this project
 
-- **TruffleHog** — git history and staged files for leaked secrets
-- **pip-audit** — Python dependencies in `requirements.txt`
-- **npm audit** — JavaScript dependencies in `package.json`
-- **Bandit** — Python code for common vulnerabilities (SQL injection, command injection, insecure crypto)
-- **Semgrep** — multi-language patterns across the whole codebase
-- **Checkov** — `Dockerfile`, `docker-compose.yml`, and `.github/workflows/*.yml` for misconfigurations
-- **OWASP ZAP** — HTTP attack simulation against the running app (Docker Compose up → scan → Docker Compose down)
+- **TruffleHog** — git history for verified leaked secrets; **blocks the pipeline** if any are found
+- **pip-audit** — Python dependencies in `requirements.txt`; **blocks the pipeline** if any vulnerability is found
+- **npm audit** — JavaScript dependencies in `package.json`; **blocks the pipeline** on CRITICAL severity
+- **Bandit** — Python code for HIGH-severity vulnerabilities; **blocks the pipeline** on HIGH + MEDIUM confidence findings
+- **Semgrep** — multi-language patterns across the whole codebase (informational)
+- **Checkov** — `Dockerfile`, `docker-compose.yml`, and `.github/workflows/*.yml` for misconfigurations (informational)
+- **OWASP ZAP** — passive HTTP scan against the backend started with a real PostgreSQL test database so that all endpoints are reachable
+- **Trivy** — scans the built `backend` Docker image; **blocks the pipeline** on CRITICAL CVEs
+- **anchore/sbom-action** — produces an SPDX SBOM artifact attached to every PR
+- **Dependabot** — opens weekly dependency-update PRs; each PR goes through the full CI pipeline
 
 ### Reports
 
-Every scan produces a timestamped JSON file (`tool_YYYY-MM-DD_HH-MM-SS.json`). After all scans run, a Python script consolidates them into a single PDF report (`security-report_YYYY-MM-DD_HH-MM-SS.pdf`) using WeasyPrint. If WeasyPrint fails, the individual JSON files and an HTML summary are uploaded as GitHub Actions artifacts. Artifacts are retained for 30 days.
-
-Scans do not block the pipeline. They produce reports. You decide whether to merge.
+Every scan produces a timestamped JSON file (`tool_YYYY-MM-DD_HH-MM-SS.json`). After all scans run, a Python script consolidates them into a single PDF report (`security-report_YYYY-MM-DD_HH-MM-SS.pdf`) using WeasyPrint. If WeasyPrint fails, the individual JSON files and an HTML summary are uploaded as GitHub Actions artifacts. Artifacts are retained for 30 days. The SBOM is uploaded as a separate artifact named `sbom`.
 
 ### What blocks vs. what reports
 
-| Stage | Behavior on failure |
+| Check | Blocks on |
 |---|---|
-| `lint-and-test` | **Blocks the pipeline** — subsequent jobs do not run |
-| `security-scans` | Does not block — generates reports regardless |
-| `generate-reports` | Does not block — uploads available artifacts even if PDF generation fails |
+| `lint-and-test` | Any failure — subsequent jobs do not run |
+| TruffleHog | Verified secret found in git history |
+| pip-audit | Any known vulnerability in Python dependencies |
+| npm audit | CRITICAL severity vulnerability in JS dependencies |
+| Bandit | HIGH severity + MEDIUM confidence Python issue |
+| Trivy | CRITICAL CVE in the backend Docker image |
+| Semgrep | Does not block — informational report |
+| Checkov | Does not block — informational report |
+| OWASP ZAP | Does not block — informational report |
+| `generate-reports` | Does not block — uploads available artifacts even if PDF fails |
 
-Tests must pass before anything else runs. Security findings are reported for your review, not used as a gate.
+Tests must pass before security scans run. Blocking scans prevent merging broken or vulnerable code. Informational scans provide context for your review.
 
 ---
 
@@ -265,22 +276,66 @@ lint-and-test
   ├── backend: pytest + flake8 + mypy
   └── frontend: vitest + eslint
        ↓
-security-scans (parallel steps)
-  ├── TruffleHog
-  ├── pip-audit
-  ├── npm audit
-  ├── Bandit
-  ├── Semgrep
-  ├── Checkov
-  └── OWASP ZAP (starts Docker Compose, scans, stops)
+security-scans (environment: production, needs postgres service)
+  ├── TruffleHog          [BLOCKING — verified secrets]
+  ├── pip-audit           [BLOCKING — any vulnerability]
+  ├── npm audit           [BLOCKING — CRITICAL severity]
+  ├── Bandit              [BLOCKING — HIGH severity]
+  ├── Trivy               [BLOCKING — CRITICAL CVE in Docker image]
+  ├── Semgrep             [informational]
+  ├── Checkov             [informational]
+  ├── OWASP ZAP           [informational — scans backend with real test DB]
+  └── SBOM generation     [informational — SPDX artifact]
        ↓
 generate-reports
   ├── consolidate JSON results
   ├── generate PDF via WeasyPrint (security-report_YYYY-MM-DD_HH-MM-SS.pdf)
-  └── upload PDF + JSON as GitHub Actions artifacts (fallback if PDF fails)
+  └── upload PDF + JSON + SBOM as GitHub Actions artifacts
 ```
 
 No deploy stage. After reviewing the pipeline results and the code, you merge the PR manually. Vercel deploys from `main` automatically.
+
+---
+
+### GitHub Environments
+
+Two environments are defined in GitHub Settings → Environments:
+
+- **staging** — secrets used by the `security-scans` job (no approval gate)
+- **production** — secrets used by any future deploy job; requires manual approval before running
+
+Environment-specific secrets (set in GitHub UI — never in code):
+
+| Secret | Used in |
+|---|---|
+| `SUPABASE_URL` | Both environments |
+| `SUPABASE_SERVICE_KEY` | Both environments |
+| `ANTHROPIC_API_KEY` | Both environments |
+| `JSEARCH_API_KEY` | Both environments |
+| `SECRET_KEY` | Both environments |
+
+Secrets at the repository level are reserved for non-sensitive CI values (e.g., `VERCEL_ORG_ID`).
+
+---
+
+### Dependency management
+
+Dependabot opens automated PRs every week for:
+- Python packages (`backend/requirements.txt` and `backend/requirements-dev.txt`)
+- npm packages (`frontend/package.json`)
+- GitHub Actions versions (`.github/workflows/`)
+
+Each Dependabot PR goes through the full CI pipeline. Blocking scans catch any vulnerability introduced by the update before it can be merged.
+
+---
+
+### Branch protection (`main`)
+
+Configured in GitHub Settings → Branches (manual, not in code):
+- Require 1 approving review before merge
+- Require `lint-and-test` status check to pass
+- Require branches to be up to date before merging
+- Disallow force-push and deletion
 
 ---
 
