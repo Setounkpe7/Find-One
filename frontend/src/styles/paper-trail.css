@@ -20,6 +20,7 @@
   --sand:        #D4B896;
   --sand-l:      #E8D6C0;
   --offer:       #E65100;
+  --ink:         #3A2518;
   --ink-soft:    #6D5344;
   --ink-faint:   #9C8874;
   --shadow-warm: rgba(44, 26, 16, 0.08);
@@ -384,7 +385,7 @@ input, textarea, select { font-family: inherit; font-size: 14px; }
   border-radius: var(--radius-sm);
   text-transform: uppercase;
 }
-.tag-neutral,
+.tag-neutral  { background: var(--beige); color: var(--brown-mid); border: 1px solid var(--sand-l); }
 .tag-location { background: var(--beige); color: var(--brown-mid); border: 1px solid var(--sand-l); }
 .tag-type     { background: rgba(107, 140, 114, 0.12); color: var(--sage-d); border: 1px solid rgba(107, 140, 114, 0.2); }
 .tag-salary   { background: rgba(192, 90, 56, 0.08); color: var(--terracotta); border: 1px solid rgba(192, 90, 56, 0.15); }
