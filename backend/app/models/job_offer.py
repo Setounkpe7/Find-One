@@ -40,11 +40,15 @@ class JobOffer(Base):
     salary = Column(String, nullable=True)
     contract_type: Mapped[Optional[ContractType]] = mapped_column(Enum(ContractType), nullable=True)
     recruiter_name = Column(String, nullable=True)
-    status: Mapped[JobStatus] = mapped_column(Enum(JobStatus), nullable=False, default=JobStatus.to_apply)
+    status: Mapped[JobStatus] = mapped_column(
+        Enum(JobStatus), nullable=False, default=JobStatus.to_apply
+    )
     applied_at = Column(Date, nullable=True)
     followup_date = Column(Date, nullable=True)
     interview_date = Column(Date, nullable=True)
     notes = Column(Text, nullable=True)
-    source: Mapped[JobSource] = mapped_column(Enum(JobSource), nullable=False, default=JobSource.manual)
+    source: Mapped[JobSource] = mapped_column(
+        Enum(JobSource), nullable=False, default=JobSource.manual
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
