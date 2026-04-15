@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
+import { AppShell } from './components/ui/AppShell'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -16,7 +17,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
-  return <>{children}</>
+  return <AppShell>{children}</AppShell>
 }
 
 export default function App() {
