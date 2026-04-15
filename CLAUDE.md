@@ -39,7 +39,12 @@ Run this checklist EVERY turn where you touched code or docs. If a box can't be 
 **Trigger:** any file ending in `.pdf` or `.docx`, or a task that involves reading/generating those formats.
 **Action:** use the corresponding `pdf` or `docx` skill instead of raw Read or shell tools.
 
-### 5. Writing user-facing documentation → `/humanizer` skill
+### 5. Any browser / web task → `browser-use` CLI
+**Trigger:** you need to interact with a web page programmatically — opening a URL, clicking, typing, filling forms, reading the DOM, extracting `localStorage` / cookies / headers, verifying a frontend-to-backend call end-to-end, reproducing a user-reported UI state.
+**Action:** use `uvx browser-use` (see the "Browser diagnostics" section below for command forms). Do NOT use raw `curl`, `wget`, or ask the user to copy/paste DevTools output when an assertion about the running app is what you need.
+**Applies whether** the task is troubleshooting, end-to-end verification of a code change, or any other "open this page and check X" work. Visual layout review by the *user* in their own browser is still their call — this rule is about what the tool *I* use to touch a browser.
+
+### 6. Writing user-facing documentation → `/humanizer` skill
 **Trigger:** you wrote or edited a `.md` file whose **audience is a human reader** — README, marketing copy, blog posts, help text, user guides.
 **Action:** run `/humanizer` on the resulting text before declaring the doc done.
 
@@ -52,14 +57,15 @@ Run this checklist EVERY turn where you touched code or docs. If a box can't be 
 
 For these technical doc types, the quality gate is clarity + completeness checked by you, not by humanizer. If unsure whether a `.md` file is user-facing, ask the user.
 
-### 6. End-of-turn checklist (paste yourself through this mentally before replying)
+### 7. End-of-turn checklist (paste yourself through this mentally before replying)
 
 ```
 [ ] Is the task non-trivial?        → a plan was produced via superpowers BEFORE code was written
 [ ] Did I touch code?               → /simplify was invoked and findings applied
 [ ] Did I touch the frontend?        → /frontend-design was invoked
-[ ] Did I touch a .md file?         → /humanizer was invoked
+[ ] Did I touch a .md file?         → /humanizer was invoked (unless exempt per rule 6)
 [ ] Did I handle a PDF/DOCX?        → used the pdf/docx skill
+[ ] Did I need to touch a browser?  → used browser-use, not curl or DevTools-by-proxy
 [ ] Did I verify my claims?         → ran tests/lint/the actual command before saying "done"
 ```
 
@@ -134,24 +140,32 @@ Pre-commit hooks run automatically on `git commit` and must pass:
 
 Install hooks: `pre-commit install`
 
-### Browser diagnostics (frontend troubleshooting)
+### Browser tasks with `browser-use`
 
-When a frontend bug depends on runtime browser state — Supabase session tokens, `localStorage`, cookies, or the exact headers a page sends — inspect it with the `browser-use` CLI instead of asking the user to read DevTools output aloud. It runs its own Chromium via Playwright.
+`browser-use` is the **default tool** for any programmatic browser interaction (see rule 5 in the non-negotiable section). It runs Chromium via Playwright.
+
+**Core commands:**
 
 ```bash
-# First-time only
-uvx browser-use doctor                                # verify setup
+uvx browser-use doctor                                          # verify setup (first time)
 
-# Open a headed session you can drive and inspect
-uvx browser-use --headed --session findone open http://localhost:5173/login
-
-# After the user logs in in that window, inspect state
-uvx browser-use --session findone state               # dumps the DOM
-uvx browser-use --session findone eval 'JSON.stringify(Object.keys(localStorage))'
-uvx browser-use --session findone eval 'JSON.parse(localStorage.getItem("sb-<project>-auth-token")).access_token'
+# Session-based flow — keep flags BEFORE the subcommand
+uvx browser-use --headed --session <name> open <url>            # open a URL in a named session
+uvx browser-use --session <name> state                          # dump current DOM
+uvx browser-use --session <name> click <selector>               # click an element
+uvx browser-use --session <name> type <selector> "<text>"       # type into a field
+uvx browser-use --session <name> screenshot                     # capture a PNG
+uvx browser-use --session <name> eval '<js expression>'         # run JS in page context
+uvx browser-use --session <name> extract '<instruction>'        # AI-assisted extraction
+uvx browser-use --session <name> cookies                        # dump cookies
+uvx browser-use --session <name> close                          # end the session
 ```
 
-**Note on async results:** the `eval` subcommand does NOT await promises. For `fetch` calls, stash the result on `window` and read it back:
+**Use a named session** (`--session <name>`) so multiple calls share state (login, cookies, `localStorage`). Without `--session`, each call starts fresh.
+
+**Headed vs headless:** use `--headed` when the user needs to perform a manual step (e.g. typing a password). Drop it once the session is established — later calls reuse the same session even without the flag.
+
+**`eval` doesn't await promises.** Stash async results on `window` and read them back:
 
 ```bash
 uvx browser-use --session findone eval 'window.__r=null; fetch(URL, OPTS).then(r => r.text().then(b => window.__r={status:r.status, body:b})); "ok"'
@@ -159,7 +173,19 @@ sleep 3
 uvx browser-use --session findone eval 'JSON.stringify(window.__r)'
 ```
 
-**When to reach for this:** "Failed to fetch" / 401 with no backend log; JWT decoding to verify `alg`/`kid`/`iss`; confirming which host a page actually calls; reproducing a user-reported UI state without their credentials on your machine. Don't use it for routine visual checks — `npm run dev` + a real browser is still simpler for layout/design review.
+**Inspecting Supabase auth state (common):**
+
+```bash
+uvx browser-use --session findone eval 'JSON.stringify(Object.keys(localStorage).filter(k => k.startsWith("sb-")))'
+uvx browser-use --session findone eval 'JSON.parse(localStorage.getItem("sb-<project>-auth-token")).access_token'
+# decode the JWT locally (header + payload base64) to verify alg/kid/iss/exp
+```
+
+**Typical use cases** (all covered by rule 5):
+- End-to-end verification after a frontend change — open the app, exercise the feature, assert the DOM/network state instead of trusting "it compiled".
+- Troubleshooting auth, CORS, CSP, missing headers — reading what the browser actually sends beats what you *think* it sends.
+- Reproducing a user-reported UI state on your own machine without their credentials (ask them to log in inside the `browser-use` window once, then inspect).
+- Scraping public pages where raw `curl` would miss JS-rendered content.
 
 ---
 
