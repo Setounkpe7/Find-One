@@ -126,14 +126,26 @@ jobs:
           pip install trufflehog3 2>/dev/null || pip install trufflehog 2>/dev/null || true
           trufflehog git file://. --only-verified --json \
             > "${REPORT_DIR}/trufflehog_${TS}.json" 2>&1 || true
+          # Block if verified secrets were found (non-empty output = at least one secret)
+          if [ -s "${REPORT_DIR}/trufflehog_${TS}.json" ]; then
+            echo "::error::TruffleHog found verified secrets in git history."
+            cat "${REPORT_DIR}/trufflehog_${TS}.json"
+            exit 1
+          fi
 
       - name: pip-audit
         env:
           REPORT_DIR: ${{ steps.report_dir.outputs.dir }}
           TS: ${{ steps.report_dir.outputs.ts }}
         run: |
+          # Always save the JSON report for artifact upload
           pip-audit -r backend/requirements.txt -f json \
             -o "${REPORT_DIR}/pip-audit_${TS}.json" 2>&1 || true
+          # Block if any vulnerability found (pip-audit exits 1 when vulns exist)
+          pip-audit -r backend/requirements.txt 2>&1 || {
+            echo "::error::pip-audit found vulnerabilities in Python dependencies."
+            exit 1
+          }
 
       - name: npm audit
         env:
@@ -141,15 +153,30 @@ jobs:
           TS: ${{ steps.report_dir.outputs.ts }}
         working-directory: frontend
         run: |
+          # Always save the JSON report for artifact upload
           npm audit --json > "../${REPORT_DIR}/npm-audit_${TS}.json" 2>&1 || true
+          # Block on CRITICAL severity only
+          npm audit --audit-level=critical || {
+            echo "::error::npm audit found CRITICAL vulnerabilities in JS dependencies."
+            exit 1
+          }
 
       - name: Bandit
         env:
           REPORT_DIR: ${{ steps.report_dir.outputs.dir }}
           TS: ${{ steps.report_dir.outputs.ts }}
         run: |
+          # Always save the full JSON report for artifact upload
           bandit -r backend/app/ -f json \
             -o "${REPORT_DIR}/bandit_${TS}.json" 2>&1 || true
+          # Block on HIGH severity + MEDIUM confidence (exit code 1 when issues found)
+          bandit -r backend/app/ \
+            --severity-level HIGH \
+            --confidence-level MEDIUM \
+            --quiet 2>&1 || {
+            echo "::error::Bandit found HIGH severity issues in Python code."
+            exit 1
+          }
 
       - name: Semgrep
         env:
