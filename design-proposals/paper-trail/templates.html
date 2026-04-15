@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find-One — Modèles & Documents</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .sub-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--sand-l);
+    margin-bottom: 28px;
+  }
+
+  .sub-tab {
+    padding: 14px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .sub-tab:hover { color: var(--espresso); }
+  .sub-tab.active {
+    color: var(--terracotta);
+    border-bottom-color: var(--terracotta);
+  }
+
+  .tpl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .tpl-card {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+  .tpl-card:hover {
+    border-color: var(--sand);
+    box-shadow: 0 8px 24px var(--shadow-warm);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  /* Document preview — fake paper look */
+  .tpl-preview {
+    height: 200px;
+    background: linear-gradient(180deg, var(--cream) 0%, white 100%);
+    border-bottom: 1px solid var(--sand-l);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tpl-preview--letter { background: linear-gradient(180deg, var(--beige) 0%, white 100%); }
+
+  .preview-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .line {
+    height: 5px;
+    background: var(--sand-l);
+    border-radius: 2px;
+  }
+  .line.title {
+    height: 8px;
+    background: var(--espresso);
+    width: 50%;
+    margin-bottom: 4px;
+  }
+  .line.subtitle {
+    height: 4px;
+    background: var(--terracotta);
+    width: 35%;
+    margin-bottom: 10px;
+  }
+  .line.w-90 { width: 90%; }
+  .line.w-80 { width: 80%; }
+  .line.w-70 { width: 70%; }
+  .line.w-60 { width: 60%; }
+  .line.w-40 { width: 40%; }
+  .line.gap  { margin-top: 10px; }
+
+  /* Small rightside ornament */
+  .preview-corner {
+    position: absolute;
+    top: 0; right: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--terracotta);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    opacity: 0.1;
+  }
+
+  .tpl-info {
+    padding: 18px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tpl-type {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    margin-bottom: 6px;
+  }
+
+  .tpl-name {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 4px;
+    line-height: 1.25;
+  }
+
+  .tpl-meta {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    font-style: italic;
+    font-family: var(--font-display);
+  }
+
+  .tpl-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--sand-l);
+  }
+
+  .tpl-stats {
+    font-size: 11px;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 10px;
+  }
+
+  .tpl-action {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--terracotta);
+    text-transform: uppercase;
+  }
+
+  /* Blank / add card */
+  .tpl-card.blank {
+    background: transparent;
+    border: 2px dashed var(--sand);
+    align-items: center;
+    justify-content: center;
+    min-height: 360px;
+    text-align: center;
+    padding: 40px 24px;
+    cursor: pointer;
+  }
+  .tpl-card.blank:hover {
+    border-color: var(--terracotta);
+    background: rgba(192, 90, 56, 0.03);
+    transform: translateY(-2px);
+    box-shadow: none;
+  }
+  .blank-icon {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--beige);
+    border: 1px solid var(--sand-l);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    color: var(--terracotta);
+    margin-bottom: 16px;
+  }
+  .blank-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 6px;
+  }
+  .blank-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    max-width: 200px;
+  }
+
+  /* Generated documents list */
+  .docs-table {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .doc-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 160px 120px 100px;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--sand-l);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-row:hover { background: var(--beige); }
+
+  .doc-row.header {
+    background: var(--cream);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: default;
+  }
+  .doc-row.header:hover { background: var(--cream); }
+
+  .doc-icon {
+    width: 36px; height: 36px;
+    background: var(--beige);
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .doc-name {
+    font-weight: 700;
+    color: var(--espresso);
+    font-size: 14px;
+  }
+  .doc-name-sub {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--font-display);
+    margin-top: 2px;
+  }
+
+  .doc-target {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .doc-target strong { color: var(--espresso); font-weight: 700; }
+
+  .doc-date {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+
+  .doc-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+</style>
+</head>
+<body data-active="templates">
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+</svg>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="eyebrow">Atelier</div>
+        <div class="page-title" style="margin-top:8px">
+          Modèles & Documents
+          <span>Vos modèles réutilisables et les documents générés pour vos candidatures</span>
+        </div>
+      </div>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Nouveau modèle
+      </button>
+    </div>
+
+    <div class="sub-tabs">
+      <button class="sub-tab active">Modèles</button>
+      <button class="sub-tab">Documents générés</button>
+    </div>
+
+    <!-- Templates grid -->
+    <div class="tpl-grid">
+      <a class="tpl-card fade-up fade-up-1" href="#">
+        <div class="tpl-preview">
+          <div class="preview-corner"></div>
+          <div class="preview-lines">
+            <div class="line title"></div>
+            <div class="line subtitle"></div>
+            <div class="line w-90"></div>
+            <div class="line w-80"></div>
+            <div class="line w-70"></div>
+            <div class="line w-60 gap"></div>
+            <div class="line w-90"></div>
+            <div class="line w-80"></div>
+            <div class="line w-40"></div>
+            <div class="line w-60 gap"></div>
+            <div class="line w-70"></div>
+          </div>
+        </div>
+        <div class="tpl-info">
+          <span class="tpl-type">CV</span>
+          <div class="tpl-name">Développeur — profil senior</div>
+          <div class="tpl-meta">Dernière mise à jour hier</div>
+          <div class="tpl-footer">
+            <div class="tpl-stats">
+              <span>📄 2 pages</span>
+              <span>🔄 14 utilisations</span>
+            </div>
+            <span class="tpl-action">Éditer →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="tpl-card fade-up fade-up-2" href="#">
+        <div class="tpl-preview tpl-preview--letter">
+          <div class="preview-corner" style="background:var(--sage)"></div>
+          <div class="preview-lines">
+            <div class="line w-40" style="height:6px;background:var(--brown-mid)"></div>
+            <div class="line subtitle" style="background:var(--sage)"></div>
+            <div class="line gap"></div>
+            <div class="line w-90"></div>
+            <div class="line w-80"></div>
+            <div class="line w-90"></div>
+            <div class="line w-70"></div>
+            <div class="line w-60 gap"></div>
+            <div class="line w-80"></div>
+            <div class="line w-90"></div>
+            <div class="line w-40"></div>
+          </div>
+        </div>
+        <div class="tpl-info">
+          <span class="tpl-type">Lettre</span>
+          <div class="tpl-name">Lettre de motivation — Tech</div>
+          <div class="tpl-meta">Dernière mise à jour il y a 3 jours</div>
+          <div class="tpl-footer">
+            <div class="tpl-stats">
+              <span>📄 1 page</span>
+              <span>🔄 8 utilisations</span>
+            </div>
+            <span class="tpl-action">Éditer →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="tpl-card fade-up fade-up-3" href="#">
+        <div class="tpl-preview">
+          <div class="preview-corner"></div>
+          <div class="preview-lines">
+            <div class="line title"></div>
+            <div class="line subtitle"></div>
+            <div class="line w-80"></div>
+            <div class="line w-60"></div>
+            <div class="line w-40 gap"></div>
+            <div class="line w-90"></div>
+            <div class="line w-80"></div>
+            <div class="line w-70"></div>
+            <div class="line w-60 gap"></div>
+            <div class="line w-80"></div>
+            <div class="line w-40"></div>
+          </div>
+        </div>
+        <div class="tpl-info">
+          <span class="tpl-type">CV</span>
+          <div class="tpl-name">Développeur — profil startup</div>
+          <div class="tpl-meta">Dernière mise à jour la semaine dernière</div>
+          <div class="tpl-footer">
+            <div class="tpl-stats">
+              <span>📄 1 page</span>
+              <span>🔄 6 utilisations</span>
+            </div>
+            <span class="tpl-action">Éditer →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="tpl-card fade-up fade-up-4" href="#">
+        <div class="tpl-preview tpl-preview--letter">
+          <div class="preview-corner" style="background:var(--brown-mid)"></div>
+          <div class="preview-lines">
+            <div class="line w-40" style="height:6px;background:var(--brown-mid)"></div>
+            <div class="line subtitle" style="background:var(--brown-mid)"></div>
+            <div class="line gap"></div>
+            <div class="line w-90"></div>
+            <div class="line w-70"></div>
+            <div class="line w-90"></div>
+            <div class="line w-60"></div>
+            <div class="line w-80 gap"></div>
+            <div class="line w-90"></div>
+            <div class="line w-40"></div>
+          </div>
+        </div>
+        <div class="tpl-info">
+          <span class="tpl-type">Lettre</span>
+          <div class="tpl-name">Lettre — Grand compte</div>
+          <div class="tpl-meta">Dernière mise à jour il y a 2 semaines</div>
+          <div class="tpl-footer">
+            <div class="tpl-stats">
+              <span>📄 1 page</span>
+              <span>🔄 4 utilisations</span>
+            </div>
+            <span class="tpl-action">Éditer →</span>
+          </div>
+        </div>
+      </a>
+
+      <div class="tpl-card blank fade-up fade-up-5">
+        <div class="blank-icon">+</div>
+        <div class="blank-title">Nouveau modèle</div>
+        <div class="blank-sub">Partez de zéro ou importez un PDF / DOCX existant.</div>
+      </div>
+    </div>
+
+    <!-- Generated docs section -->
+    <div class="section-header" style="margin-top:48px">
+      <div class="section-title">Documents générés récemment</div>
+      <a class="section-link" href="#">Tout voir →</a>
+    </div>
+
+    <div class="docs-table">
+      <div class="doc-row header">
+        <div></div>
+        <div>Document</div>
+        <div>Candidature</div>
+        <div>Date</div>
+        <div style="text-align:right">Actions</div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-icon">📄</div>
+        <div>
+          <div class="doc-name">CV — Doctolib Full-Stack</div>
+          <div class="doc-name-sub">Généré par Claude à partir de "Développeur senior"</div>
+        </div>
+        <div class="doc-target"><strong>Doctolib</strong></div>
+        <div class="doc-date">hier, 16h32</div>
+        <div class="doc-actions">
+          <button class="btn-icon btn-icon-sm" title="Télécharger">
+            <svg width="14" height="14"><use href="#i-download"/></svg>
+          </button>
+          <button class="btn-icon btn-icon-sm" title="Voir">
+            <svg width="14" height="14"><use href="#i-eye"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-icon">✉️</div>
+        <div>
+          <div class="doc-name">Lettre — Doctolib</div>
+          <div class="doc-name-sub">Généré à partir de "Lettre de motivation — Tech"</div>
+        </div>
+        <div class="doc-target"><strong>Doctolib</strong></div>
+        <div class="doc-date">hier, 16h28</div>
+        <div class="doc-actions">
+          <button class="doc-action-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8"/></svg>
+          </button>
+          <button class="doc-action-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-icon">✉️</div>
+        <div>
+          <div class="doc-name">Lettre — Alan</div>
+          <div class="doc-name-sub">Version ajustée pour le contexte remote</div>
+        </div>
+        <div class="doc-target"><strong>Alan</strong></div>
+        <div class="doc-date">il y a 3 jours</div>
+        <div class="doc-actions">
+          <button class="doc-action-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8"/></svg>
+          </button>
+          <button class="doc-action-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-icon">📄</div>
+        <div>
+          <div class="doc-name">CV — Ledger Crypto</div>
+          <div class="doc-name-sub">Mis en avant : expérience Rust + sécurité</div>
+        </div>
+        <div class="doc-target"><strong>Ledger</strong></div>
+        <div class="doc-date">il y a 5 jours</div>
+        <div class="doc-actions">
+          <button class="doc-action-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8"/></svg>
+          </button>
+          <button class="doc-action-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="_sidebar.js"></script>
+</body>
+</html>

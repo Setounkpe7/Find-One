@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find-One — Mon profil</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  /* Side nav */
+  .profile-nav {
+    position: sticky;
+    top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pn-item {
+    padding: 10px 14px;
+    border-left: 2px solid transparent;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .pn-item:hover {
+    color: var(--espresso);
+    background: var(--beige);
+    text-decoration: none;
+  }
+  .pn-item.active {
+    color: var(--terracotta);
+    border-left-color: var(--terracotta);
+    font-weight: 700;
+    background: rgba(192, 90, 56, 0.05);
+  }
+
+  .pn-section {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 12px 14px 6px;
+    margin-top: 16px;
+  }
+  .pn-section:first-child { margin-top: 0; }
+
+  /* Profile hero */
+  .profile-hero {
+    background: var(--espresso);
+    color: var(--beige);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .profile-hero::before {
+    content: '';
+    position: absolute;
+    inset: -30% -20%;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(232,133,106,0.2), transparent 55%),
+      radial-gradient(circle at 80% 60%, rgba(107,140,114,0.15), transparent 55%);
+    pointer-events: none;
+  }
+
+  .profile-pic {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--brown-mid));
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 40px;
+    color: white;
+    font-weight: 600;
+    border: 4px solid var(--sand);
+    flex-shrink: 0;
+    z-index: 1;
+    position: relative;
+  }
+
+  .profile-hero-info {
+    flex: 1;
+    z-index: 1;
+    position: relative;
+  }
+
+  .ph-name {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--beige);
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+  }
+
+  .ph-role {
+    font-size: 14px;
+    color: var(--sand);
+    margin-bottom: 14px;
+  }
+  .ph-role em { color: var(--terracotta-l); font-style: italic; }
+
+  .ph-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--sand);
+    opacity: 0.8;
+    flex-wrap: wrap;
+  }
+  .ph-meta span { display: inline-flex; align-items: center; gap: 5px; }
+
+  .ph-complete {
+    z-index: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(212, 184, 150, 0.2);
+    border-radius: var(--radius);
+  }
+
+  .complete-ring {
+    position: relative;
+    width: 60px; height: 60px;
+  }
+
+  .complete-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sand);
+  }
+
+  /* Sections */
+  .section {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+
+  .section-header-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--sand-l);
+  }
+
+  .section-title-inline {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  /* Experience list */
+  .exp-list { display: flex; flex-direction: column; gap: 18px; }
+
+  .exp-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 18px;
+    padding: 16px;
+    background: var(--cream);
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+  }
+  .exp-item:hover {
+    border-color: var(--sand);
+    box-shadow: 0 4px 12px var(--shadow-warm);
+  }
+
+  .exp-logo {
+    width: 50px; height: 50px;
+    border-radius: var(--radius-sm);
+    background: white;
+    border: 1px solid var(--sand-l);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .exp-info { min-width: 0; }
+
+  .exp-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 2px;
+  }
+
+  .exp-company {
+    font-size: 13px;
+    color: var(--terracotta);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .exp-period {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--font-display);
+    margin-bottom: 8px;
+  }
+
+  .exp-desc {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .exp-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Skills */
+  .skills-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .skill-tag {
+    display: inline-flex;
+    align-items: center; gap: 6px;
+    padding: 6px 14px;
+    background: var(--beige);
+    border: 1px solid var(--sand-l);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .skill-tag:hover {
+    background: var(--terracotta);
+    color: white;
+    border-color: var(--terracotta);
+  }
+  .skill-tag.primary {
+    background: var(--terracotta);
+    color: white;
+    border-color: var(--terracotta);
+  }
+  .skill-tag .remove {
+    font-size: 14px;
+    opacity: 0.6;
+  }
+  .skill-tag .remove:hover { opacity: 1; }
+
+  .skill-tag.add-new {
+    background: transparent;
+    border: 1px dashed var(--sand);
+    color: var(--terracotta);
+    font-weight: 700;
+  }
+
+  /* Save bar */
+  .save-bar {
+    position: sticky;
+    bottom: 20px;
+    background: var(--espresso);
+    color: var(--beige);
+    padding: 14px 24px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 40px var(--shadow-deep);
+    margin-top: 28px;
+  }
+
+  .save-bar-msg {
+    font-size: 13px;
+    color: var(--sand);
+  }
+  .save-bar-msg strong { color: var(--beige); }
+
+  .save-bar .btn-secondary { background: transparent; color: var(--sand); border-color: var(--brown-mid); }
+  .save-bar .btn-secondary:hover { background: var(--brown-mid); color: var(--beige); }
+</style>
+</head>
+<body data-active="profile">
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="eyebrow">Mon profil</div>
+        <div class="page-title" style="margin-top:8px">
+          Votre <em>identité</em>
+          <span>Le socle à partir duquel Claude rédige vos CV et lettres</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-layout">
+      <!-- Side nav -->
+      <aside class="profile-nav">
+        <div class="pn-section">Profil</div>
+        <a class="pn-item active" href="#perso">Informations</a>
+        <a class="pn-item" href="#about">À propos</a>
+        <a class="pn-item" href="#experience">Expériences</a>
+        <a class="pn-item" href="#education">Formation</a>
+        <a class="pn-item" href="#skills">Compétences</a>
+
+        <div class="pn-section">Paramètres</div>
+        <a class="pn-item" href="#account">Compte</a>
+        <a class="pn-item" href="#security">Sécurité</a>
+        <a class="pn-item" href="#notifications">Notifications</a>
+      </aside>
+
+      <!-- Main content -->
+      <div>
+        <!-- Profile hero -->
+        <div class="profile-hero">
+          <div class="profile-pic">MD</div>
+          <div class="profile-hero-info">
+            <div class="ph-name">Martin Doubin</div>
+            <div class="ph-role">Développeur full-stack <em>senior</em> · 8 ans d'expérience</div>
+            <div class="ph-meta">
+              <span>📍 Paris, France</span>
+              <span>✉️ martin.doubin@example.com</span>
+              <span>🔗 linkedin.com/in/mdoubin</span>
+            </div>
+          </div>
+          <div class="ph-complete">
+            <div class="complete-ring">
+              <svg width="60" height="60" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r="25" fill="none" stroke="rgba(212,184,150,0.2)" stroke-width="5"/>
+                <circle cx="30" cy="30" r="25" fill="none" stroke="#C05A38" stroke-width="5"
+                  stroke-dasharray="157" stroke-dashoffset="31.4" stroke-linecap="round"
+                  transform="rotate(-90 30 30)"/>
+                <text x="30" y="34" text-anchor="middle" font-family="Playfair Display,serif" font-size="16" font-weight="600" fill="#F5EEE0">80%</text>
+              </svg>
+            </div>
+            <div class="complete-label">Profil</div>
+          </div>
+        </div>
+
+        <!-- Perso info -->
+        <div class="section" id="perso">
+          <div class="section-header-inline">
+            <div class="section-title-inline">Informations personnelles</div>
+            <button class="btn btn-ghost btn-sm">Modifier</button>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label">Prénom</label>
+              <input class="input" type="text" value="Martin">
+            </div>
+            <div class="field">
+              <label class="label">Nom</label>
+              <input class="input" type="text" value="Doubin">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label">Intitulé professionnel</label>
+              <input class="input" type="text" value="Développeur full-stack senior">
+            </div>
+            <div class="field">
+              <label class="label">Localisation</label>
+              <input class="input" type="text" value="Paris, France">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label">E-mail</label>
+              <input class="input" type="email" value="martin.doubin@example.com">
+            </div>
+            <div class="field">
+              <label class="label">Téléphone</label>
+              <input class="input" type="tel" value="+33 6 12 34 56 78">
+            </div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="section" id="about">
+          <div class="section-header-inline">
+            <div class="section-title-inline">À propos de vous</div>
+            <button class="btn btn-ghost btn-sm">Améliorer avec Claude ✨</button>
+          </div>
+
+          <div class="field">
+            <label class="label">Pitch professionnel</label>
+            <textarea class="textarea" rows="4">Développeur full-stack passionné par les produits qui ont du sens. 8 ans d'expérience dans des contextes variés — startup early stage, scale-up B2B, grande entreprise. J'aime les équipes où l'on peut avoir un impact direct sur l'architecture et le produit, et où la qualité technique est un sujet sérieux.</textarea>
+            <div class="field-hint">Ce texte sera la base de vos CV. Claude l'adapte à chaque offre.</div>
+          </div>
+        </div>
+
+        <!-- Experience -->
+        <div class="section" id="experience">
+          <div class="section-header-inline">
+            <div class="section-title-inline">Expériences</div>
+            <button class="btn btn-primary btn-sm">+ Ajouter</button>
+          </div>
+
+          <div class="exp-list">
+            <div class="exp-item">
+              <div class="exp-logo">💼</div>
+              <div class="exp-info">
+                <div class="exp-title">Développeur Senior Full-Stack</div>
+                <div class="exp-company">Qonto · Paris</div>
+                <div class="exp-period">Janvier 2022 — présent · 4 ans</div>
+                <div class="exp-desc">
+                  Lead technique sur l'équipe "Comptes pro", refonte complète du flow d'onboarding (passage de 5 à 12 pays). Mentorat de 3 juniors. Stack : React, Elixir, PostgreSQL, Kafka.
+                </div>
+              </div>
+              <div class="exp-actions">
+                <button class="btn-icon" title="Modifier">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+                <button class="btn-icon" title="Supprimer">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="exp-item">
+              <div class="exp-logo">🚀</div>
+              <div class="exp-info">
+                <div class="exp-title">Développeur Full-Stack</div>
+                <div class="exp-company">Algolia · Paris</div>
+                <div class="exp-period">Mars 2019 — décembre 2021 · 2 ans 10 mois</div>
+                <div class="exp-desc">
+                  Contribution au dashboard analytics (React + TypeScript). Optimisation des performances — réduction du TTFB de 40%. Participation à la refonte du design system.
+                </div>
+              </div>
+              <div class="exp-actions">
+                <button class="btn-icon">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+                <button class="btn-icon">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="exp-item">
+              <div class="exp-logo">💡</div>
+              <div class="exp-info">
+                <div class="exp-title">Développeur Web</div>
+                <div class="exp-company">Frichti · Paris</div>
+                <div class="exp-period">Juin 2017 — février 2019 · 1 an 9 mois</div>
+                <div class="exp-desc">
+                  Premier emploi. Développement de l'interface restaurateur (React) et participation au back-office (Ruby on Rails). Itérations rapides dans un contexte startup.
+                </div>
+              </div>
+              <div class="exp-actions">
+                <button class="btn-icon">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+                <button class="btn-icon">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="section" id="skills">
+          <div class="section-header-inline">
+            <div class="section-title-inline">Compétences</div>
+          </div>
+
+          <div class="field">
+            <label class="label">Expertise principale</label>
+            <div class="skills-row">
+              <span class="skill-tag primary">React <span class="remove">×</span></span>
+              <span class="skill-tag primary">TypeScript <span class="remove">×</span></span>
+              <span class="skill-tag primary">Node.js <span class="remove">×</span></span>
+              <span class="skill-tag primary">PostgreSQL <span class="remove">×</span></span>
+              <span class="skill-tag add-new">+ Ajouter</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">Autres compétences</label>
+            <div class="skills-row">
+              <span class="skill-tag">Elixir <span class="remove">×</span></span>
+              <span class="skill-tag">Ruby on Rails <span class="remove">×</span></span>
+              <span class="skill-tag">GraphQL <span class="remove">×</span></span>
+              <span class="skill-tag">Kubernetes <span class="remove">×</span></span>
+              <span class="skill-tag">AWS <span class="remove">×</span></span>
+              <span class="skill-tag">Redis <span class="remove">×</span></span>
+              <span class="skill-tag">Kafka <span class="remove">×</span></span>
+              <span class="skill-tag">Design Systems <span class="remove">×</span></span>
+              <span class="skill-tag add-new">+ Ajouter</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save bar -->
+        <div class="save-bar">
+          <div class="save-bar-msg">
+            <strong>Modifications non enregistrées</strong> · vos changements seront appliqués à vos prochains documents.
+          </div>
+          <div class="row gap-2">
+            <button class="btn btn-secondary">Annuler</button>
+            <button class="btn btn-primary">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="_sidebar.js"></script>
+</body>
+</html>
