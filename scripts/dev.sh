@@ -59,6 +59,23 @@ die()  { printf "${C_RED}${C_BOLD}[dev]${C_RESET} %s\n" "$*" >&2; exit 1; }
 # ─── Preflight ───────────────────────────────────────────────────────
 command -v uvicorn >/dev/null 2>&1 || die "uvicorn not found on PATH. Activate your Python env or run: pip install -r backend/requirements.txt"
 command -v npm >/dev/null 2>&1 || die "npm not found on PATH. Install Node.js 20+."
+command -v node >/dev/null 2>&1 || die "node not found on PATH. Install Node.js 20+."
+
+# Node version: Vite 7 needs Node 20+. Project pins this in /.nvmrc.
+NODE_MAJOR=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)
+if (( NODE_MAJOR < 20 )); then
+  die "Node $(node --version) is too old. Vite 7 needs Node 20+ (see .nvmrc). Try: nvm use"
+fi
+
+# Backend deps: the 'uvicorn' on PATH must belong to an env that has
+# fastapi + the app itself installed. Dry-import from backend/ with the
+# matching Python (uvicorn's shebang interpreter) to catch mismatches
+# like a stale virtualenv being active.
+UVICORN_PY=$(head -1 "$(command -v uvicorn)" | sed -n 's|^#!\(/[^ ]*\).*|\1|p')
+if [[ -n "$UVICORN_PY" ]] && [[ -x "$UVICORN_PY" ]]; then
+  (cd "$BACKEND_DIR" && "$UVICORN_PY" -c "import fastapi, app.main" 2>/dev/null) || die \
+    "The 'uvicorn' on PATH ($(command -v uvicorn)) can't import fastapi or backend/app. Activate the right Python env — 'which uvicorn' should point at it — and pip install -r backend/requirements.txt."
+fi
 
 [[ -d "$FRONTEND_DIR/node_modules" ]] || die "frontend/node_modules missing. Run: cd frontend && npm install"
 [[ -f "$ROOT/.env" ]] || warn ".env not found at repo root — backend may start with empty Supabase config."
