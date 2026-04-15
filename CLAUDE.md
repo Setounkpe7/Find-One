@@ -44,7 +44,18 @@ Run this checklist EVERY turn where you touched code or docs. If a box can't be 
 **Action:** use `uvx browser-use` (see the "Browser diagnostics" section below for command forms). Do NOT use raw `curl`, `wget`, or ask the user to copy/paste DevTools output when an assertion about the running app is what you need.
 **Applies whether** the task is troubleshooting, end-to-end verification of a code change, or any other "open this page and check X" work. Visual layout review by the *user* in their own browser is still their call — this rule is about what the tool *I* use to touch a browser.
 
-### 6. Writing user-facing documentation → `/humanizer` skill
+### 6. Scripts and CLI tools → test the happy path before declaring "ready"
+**Trigger:** you wrote or modified a shell script, Python CLI, Makefile target, `package.json` script, or any other executable artifact the user (or CI) will run.
+**Action:** before saying "the script is ready" or "it works":
+1. Run the actual main invocation end-to-end (not just `--help` or syntax check) in a representative environment.
+2. Confirm it produces the advertised result — a listening port, a committed change, a file written, an exit code, whatever the contract is.
+3. If the environment where you test differs from the user's (PATH, Node version, Python env, CWD), call that out explicitly so the user knows which axes you did *not* cover.
+
+**Why:** shell scripts are the single category where "it looks right" is most misleading. Preflight checks, quoting, `set -euo pipefail` interactions, signal handling, subshell scoping — all of these silently pass syntax checks and only fail at runtime. A script that has only been proven to parse is not a script that has been proven to work.
+
+**Counter-example from this project:** dev.sh was committed after running only `--help` and `bash -n`. When actually invoked, it revealed two real preflight gaps (Node version, uvicorn-vs-fastapi env mismatch) that would have hit the user. Always run the thing.
+
+### 7. Writing user-facing documentation → `/humanizer` skill
 **Trigger:** you wrote or edited a `.md` file whose **audience is a human reader** — README, marketing copy, blog posts, help text, user guides.
 **Action:** run `/humanizer` on the resulting text before declaring the doc done.
 
@@ -57,15 +68,16 @@ Run this checklist EVERY turn where you touched code or docs. If a box can't be 
 
 For these technical doc types, the quality gate is clarity + completeness checked by you, not by humanizer. If unsure whether a `.md` file is user-facing, ask the user.
 
-### 7. End-of-turn checklist (paste yourself through this mentally before replying)
+### 8. End-of-turn checklist (paste yourself through this mentally before replying)
 
 ```
 [ ] Is the task non-trivial?        → a plan was produced via superpowers BEFORE code was written
 [ ] Did I touch code?               → /simplify was invoked and findings applied
 [ ] Did I touch the frontend?        → /frontend-design was invoked
-[ ] Did I touch a .md file?         → /humanizer was invoked (unless exempt per rule 6)
+[ ] Did I touch a .md file?         → /humanizer was invoked (unless exempt per rule 7)
 [ ] Did I handle a PDF/DOCX?        → used the pdf/docx skill
 [ ] Did I need to touch a browser?  → used browser-use, not curl or DevTools-by-proxy
+[ ] Did I write a script/CLI tool?  → ran it end-to-end, not just --help or bash -n
 [ ] Did I verify my claims?         → ran tests/lint/the actual command before saying "done"
 ```
 
@@ -91,54 +103,6 @@ scripts/dev.sh --no-browser    # skip the browser step
 ```
 
 Runs uvicorn and Vite in parallel, waits for both to listen, then opens http://localhost:5173. Ctrl+C stops everything. Requires `uvicorn` on PATH (activate your Python env first) and `cd frontend && npm install` done once.
-
-### Backend
-
-```bash
-# Run all backend tests
-cd backend && python -m pytest tests/ -x -q --tb=short
-
-# Run a single test
-cd backend && python -m pytest tests/test_jobs.py::test_create_job_offer -v
-
-# Lint (CI requires max-line-length=100)
-python -m flake8 backend/app/ --max-line-length=100
-
-# Type check
-mypy backend/app/ --ignore-missing-imports
-
-# Start dev server
-uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Frontend
-
-```bash
-# Run all frontend tests
-cd frontend && npm run test:run
-
-# Run a single test file
-cd frontend && npx vitest run src/tests/MyComponent.test.tsx
-
-# Lint (zero warnings allowed)
-cd frontend && npm run lint
-
-# Dev server
-cd frontend && npm run dev
-
-# Production build
-cd frontend && npm run build
-```
-
-### Database
-
-```bash
-# Start local PostgreSQL + Vault via Docker Compose
-docker-compose up -d
-
-# Apply migrations (run from repo root)
-cd backend && alembic upgrade head
-```
 
 ### Pre-commit Hooks
 
