@@ -79,6 +79,21 @@ jobs:
     needs: lint-and-test
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: findone
+          POSTGRES_PASSWORD: findone
+          POSTGRES_DB: findone_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -189,6 +204,13 @@ jobs:
           checkov -d . --output json \
             > "${REPORT_DIR}/checkov_${TS}.json" 2>&1 || true
 
+      - name: Run Alembic migrations for ZAP test DB
+        env:
+          DATABASE_URL: postgresql://findone:findone@localhost:5432/findone_test
+        run: |
+          cd backend
+          alembic upgrade head
+
       - name: OWASP ZAP baseline scan
         env:
           REPORT_DIR: ${{ steps.report_dir.outputs.dir }}
@@ -197,7 +219,8 @@ jobs:
           docker pull ghcr.io/zaproxy/zaproxy:stable 2>/dev/null || true
           # Start the backend for ZAP to scan
           pip install -r backend/requirements.txt 2>/dev/null || true
-          DATABASE_URL="" SUPABASE_URL="" SUPABASE_SERVICE_KEY="" \
+          DATABASE_URL="postgresql://findone:findone@localhost:5432/findone_test" \
+            SUPABASE_URL="" SUPABASE_SERVICE_KEY="" SUPABASE_JWT_SECRET="" \
             ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" SECRET_KEY="zap-test" \
             uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
           sleep 5
