@@ -57,24 +57,69 @@ warn() { printf "${C_YELLOW}${C_BOLD}[dev]${C_RESET} %s\n" "$*" >&2; }
 die()  { printf "${C_RED}${C_BOLD}[dev]${C_RESET} %s\n" "$*" >&2; exit 1; }
 
 # ─── Preflight ───────────────────────────────────────────────────────
-command -v uvicorn >/dev/null 2>&1 || die "uvicorn not found on PATH. Activate your Python env or run: pip install -r backend/requirements.txt"
 command -v npm >/dev/null 2>&1 || die "npm not found on PATH. Install Node.js 20+."
-command -v node >/dev/null 2>&1 || die "node not found on PATH. Install Node.js 20+."
 
-# Node version: Vite 7 needs Node 20+. Project pins this in /.nvmrc.
-NODE_MAJOR=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)
-if (( NODE_MAJOR < 20 )); then
-  die "Node $(node --version) is too old. Vite 7 needs Node 20+ (see .nvmrc). Try: nvm use"
+# ─── Pick a Node that satisfies .nvmrc ────────────────────────────────
+# PATH may have an old system Node ahead of nvm's. Try nvm if needed.
+node_major() {
+  "$1" -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0
+}
+
+NODE_BIN=""
+if command -v node >/dev/null 2>&1 && (( $(node_major node) >= 20 )); then
+  NODE_BIN=$(command -v node)
+else
+  # Try to activate nvm (sourced only inside this script; user's shell is untouched).
+  NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+    # shellcheck disable=SC1090,SC1091
+    \. "$NVM_DIR/nvm.sh" >/dev/null
+    # `nvm use` must run in this shell (not a subshell) so the PATH change
+    # sticks. It reads .nvmrc from CWD, so point CWD at the repo root.
+    pushd "$ROOT" >/dev/null
+    nvm use >/dev/null 2>&1 || true
+    popd >/dev/null
+    command -v node >/dev/null 2>&1 && (( $(node_major node) >= 20 )) && NODE_BIN=$(command -v node)
+  fi
+  # Last resort: scan ~/.nvm for an installed version that matches.
+  if [[ -z "$NODE_BIN" ]] && [[ -d "$NVM_DIR/versions/node" ]]; then
+    for candidate in "$NVM_DIR/versions/node"/*/bin/node; do
+      [[ -x "$candidate" ]] || continue
+      if (( $(node_major "$candidate") >= 20 )); then
+        NODE_BIN=$candidate
+        break
+      fi
+    done
+  fi
 fi
+[[ -n "$NODE_BIN" ]] || die "No Node 20+ found. Install via nvm (see .nvmrc: $(cat "$ROOT/.nvmrc")) then run: nvm install && nvm use"
 
-# Backend deps: the 'uvicorn' on PATH must belong to an env that has
-# fastapi + the app itself installed. Dry-import from backend/ with the
-# matching Python (uvicorn's shebang interpreter) to catch mismatches
-# like a stale virtualenv being active.
-UVICORN_PY=$(head -1 "$(command -v uvicorn)" | sed -n 's|^#!\(/[^ ]*\).*|\1|p')
-if [[ -n "$UVICORN_PY" ]] && [[ -x "$UVICORN_PY" ]]; then
-  (cd "$BACKEND_DIR" && "$UVICORN_PY" -c "import fastapi, app.main" 2>/dev/null) || die \
-    "The 'uvicorn' on PATH ($(command -v uvicorn)) can't import fastapi or backend/app. Activate the right Python env — 'which uvicorn' should point at it — and pip install -r backend/requirements.txt."
+# Make sure 'node' and 'npm' seen by children resolve to $NODE_BIN.
+NODE_DIR=$(dirname "$NODE_BIN")
+[[ -x "$NODE_DIR/npm" ]] || die "Found $NODE_BIN but no npm next to it. Reinstall Node."
+export PATH="$NODE_DIR:$PATH"
+hash -r
+
+# ─── Pick a working uvicorn (one that can import fastapi + backend/app) ───
+# PATH may have uvicorn in multiple envs (e.g. uvx's browser-use env
+# ahead of miniforge). Probe each candidate via its own shebang Python.
+pick_uvicorn() {
+  local candidate py
+  while IFS= read -r candidate; do
+    py=$(head -1 "$candidate" 2>/dev/null | sed -n 's|^#!\(/[^ ]*\).*|\1|p') || continue
+    [[ -n "$py" ]] && [[ -x "$py" ]] || continue
+    if (cd "$BACKEND_DIR" && "$py" -c "import fastapi, app.main" >/dev/null 2>&1); then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done < <(which -a uvicorn 2>/dev/null)
+  return 1
+}
+
+UVICORN_BIN=$(pick_uvicorn || true)
+if [[ -z "$UVICORN_BIN" ]]; then
+  all=$(which -a uvicorn 2>/dev/null | paste -sd', ' - || true)
+  die "No uvicorn on PATH can import fastapi + backend/app. Checked: ${all:-<none>}. Activate a Python env with backend deps installed: cd backend && pip install -r requirements.txt"
 fi
 
 [[ -d "$FRONTEND_DIR/node_modules" ]] || die "frontend/node_modules missing. Run: cd frontend && npm install"
@@ -128,14 +173,16 @@ trap cleanup EXIT INT TERM
 
 # ─── Start backend ───────────────────────────────────────────────────
 info "Starting backend on :$BACKEND_PORT (uvicorn --reload)…"
+log "  using: $UVICORN_BIN"
 (
   cd "$BACKEND_DIR"
-  exec uvicorn app.main:app --reload --port "$BACKEND_PORT"
+  exec "$UVICORN_BIN" app.main:app --reload --port "$BACKEND_PORT"
 ) &
 BACKEND_PID=$!
 
 # ─── Start frontend ──────────────────────────────────────────────────
 info "Starting frontend on :$FRONTEND_PORT (vite)…"
+log "  using: $NODE_BIN ($(node --version))"
 (
   cd "$FRONTEND_DIR"
   exec npm run dev -- --port "$FRONTEND_PORT" --strictPort
