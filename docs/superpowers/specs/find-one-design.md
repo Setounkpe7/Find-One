@@ -310,9 +310,9 @@ Environment-specific secrets (set in GitHub UI — never in code):
 |---|---|
 | `SUPABASE_URL` | Both environments |
 | `SUPABASE_SERVICE_KEY` | Both environments |
+| `SUPABASE_JWT_SECRET` | Both environments |
 | `ANTHROPIC_API_KEY` | Both environments |
 | `JSEARCH_API_KEY` | Both environments |
-| `SECRET_KEY` | Both environments |
 
 Secrets at the repository level are reserved for non-sensitive CI values (e.g., `VERCEL_ORG_ID`).
 

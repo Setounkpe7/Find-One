@@ -336,8 +336,8 @@ Replace only the backend startup lines (keep the docker pull and the ZAP run lin
           docker pull ghcr.io/zaproxy/zaproxy:stable 2>/dev/null || true
           # Start the backend with a real test database so endpoints are reachable
           DATABASE_URL="postgresql://findone:findone@localhost:5432/findone_test" \
-            SUPABASE_URL="" SUPABASE_SERVICE_KEY="" \
-            ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" SECRET_KEY="zap-test" \
+            SUPABASE_URL="" SUPABASE_SERVICE_KEY="" SUPABASE_JWT_SECRET="" \
+            ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" \
             uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
           sleep 5
 ```
@@ -841,9 +841,9 @@ Go to **GitHub → Find-One repo → Settings → Environments** and create two 
 - Add these secrets (copy from your `.env` or Supabase dashboard):
   - `SUPABASE_URL`
   - `SUPABASE_SERVICE_KEY`
+  - `SUPABASE_JWT_SECRET`
   - `ANTHROPIC_API_KEY`
   - `JSEARCH_API_KEY`
-  - `SECRET_KEY`
 
 **Environment: `production`**
 - Add a required reviewer (yourself) — this prevents any automated job from deploying to prod without approval
