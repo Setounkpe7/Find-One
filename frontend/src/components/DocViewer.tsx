@@ -57,7 +57,7 @@ export function DocViewer({ jobOfferId, templates }: DocViewerProps) {
       }
       if (templateId) body.template_id = templateId
 
-      const response = await fetch(`${(import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'}/api/documents/generate`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:8000'}/api/documents/generate`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),

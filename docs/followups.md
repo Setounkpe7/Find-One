@@ -80,3 +80,30 @@ dominant failure mode).
   Jungle) returns a populated `title`, `company`, and `description`.
 - Timeout after 20 s with a clear error rather than empty fields.
 - Concurrency capped so a single user cannot exhaust worker pool.
+
+---
+
+## Add `tsc --noEmit` to frontend CI
+
+**Reported:** 2026-04-15 · Paper Trail refactor final verification
+**Severity:** Low — quality gate, not a user-facing bug.
+
+CI (`.github/workflows/ci-pipeline.yml`) runs `npm run test:run` and
+`npm run lint` but not `npm run build` or `tsc --noEmit`. That's how
+several type errors (`import.meta.env` untyped, missing vitest globals,
+`string.replaceAll` needing ES2021+) lived in `main` for weeks without
+anyone noticing — they only surface when someone runs `npm run build`
+locally. Fixed in commit 611d090.
+
+### Fix
+
+Add a step to the `lint-and-test` job:
+
+```yaml
+      - name: Frontend — tsc
+        working-directory: frontend
+        run: npx tsc --noEmit
+```
+
+Place it right after `Frontend — vitest` and before `Frontend — eslint`
+so a type error fails fast.
