@@ -83,6 +83,15 @@ Find-One is a job application tracker. Users save job offers, track application 
 
 ## Commands
 
+### One-shot dev startup
+
+```bash
+scripts/dev.sh                 # backend + frontend + opens the browser
+scripts/dev.sh --no-browser    # skip the browser step
+```
+
+Runs uvicorn and Vite in parallel, waits for both to listen, then opens http://localhost:5173. Ctrl+C stops everything. Requires `uvicorn` on PATH (activate your Python env first) and `cd frontend && npm install` done once.
+
 ### Backend
 
 ```bash
