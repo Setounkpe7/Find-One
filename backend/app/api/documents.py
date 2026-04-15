@@ -32,11 +32,11 @@ def _find_best_template(
         .first()
     )
     if tmpl:
-        return parse_template(tmpl.file_path, tmpl.file_type.value), tmpl.id
+        return parse_template(str(tmpl.file_path), str(tmpl.file_type.value)), str(tmpl.id)
 
     tmpl = db.query(Template).filter(Template.user_id == user_id).first()
     if tmpl:
-        return parse_template(tmpl.file_path, tmpl.file_type.value), tmpl.id
+        return parse_template(str(tmpl.file_path), str(tmpl.file_type.value)), str(tmpl.id)
 
     return "", None
 
