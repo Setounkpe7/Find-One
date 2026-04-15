@@ -180,8 +180,8 @@ jobs:
             -o "${REPORT_DIR}/bandit_${TS}.json" 2>&1 || true
           # Block on HIGH severity + MEDIUM confidence (exit code 1 when issues found)
           bandit -r backend/app/ \
-            --severity-level HIGH \
-            --confidence-level MEDIUM \
+            --severity-level high \
+            --confidence-level medium \
             --quiet 2>&1 || {
             echo "::error::Bandit found HIGH severity issues in Python code."
             exit 1
