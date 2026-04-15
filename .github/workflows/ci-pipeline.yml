@@ -99,12 +99,6 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r backend/requirements.txt bandit semgrep pip-audit
 
-      - name: Install WeasyPrint system deps
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev
-
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
@@ -218,11 +212,6 @@ jobs:
             -v "$(pwd)/${REPORT_DIR}:/out" \
             ghcr.io/zaproxy/zaproxy:stable \
             sh -c "cp /zap/wrk/zap_${TS}.json /out/ 2>/dev/null || true" || true
-
-      - name: Generate security report
-        env:
-          REPORT_DIR: ${{ steps.report_dir.outputs.dir }}
-        run: python scripts/generate_security_report.py "${REPORT_DIR}" || true
 
       - name: Upload security artifacts
         if: always()
