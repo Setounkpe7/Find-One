@@ -320,7 +320,7 @@ Find:
           # Start the backend for ZAP to scan
           pip install -r backend/requirements.txt 2>/dev/null || true
           DATABASE_URL="" SUPABASE_URL="" SUPABASE_SERVICE_KEY="" \
-            ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" SECRET_KEY="zap-test" \
+            ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" \
             uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
           sleep 5
 ```
