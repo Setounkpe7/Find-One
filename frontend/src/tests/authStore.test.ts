@@ -20,7 +20,7 @@ describe('authStore', () => {
   })
 
   it('logout clears user and session', async () => {
-    useAuthStore.setState({ user: { id: '1', email: 'a@b.com' }, session: { access_token: 'tok' } as any })
+    useAuthStore.setState({ user: { id: '1', email: 'a@b.com' } as any, session: { access_token: 'tok' } as any })
     await useAuthStore.getState().logout()
     expect(useAuthStore.getState().user).toBeNull()
     expect(useAuthStore.getState().session).toBeNull()
