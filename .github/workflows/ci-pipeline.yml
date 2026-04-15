@@ -242,3 +242,19 @@ jobs:
           name: security-report-${{ steps.report_dir.outputs.ts }}
           path: ${{ steps.report_dir.outputs.dir }}/
           retention-days: 30
+
+      - name: Generate SBOM
+        if: always()
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: sbom.spdx.json
+
+      - name: Upload SBOM artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ steps.report_dir.outputs.ts }}
+          path: sbom.spdx.json
+          retention-days: 30
