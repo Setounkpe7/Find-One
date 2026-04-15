@@ -78,6 +78,7 @@ jobs:
     name: Security Scans
     needs: lint-and-test
     runs-on: ubuntu-latest
+    environment: staging
 
     services:
       postgres:
