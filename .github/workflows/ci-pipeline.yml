@@ -258,14 +258,21 @@ jobs:
           chmod 777 "${REPORT_DIR}"
           cp .github/workflows/zap_auth_hook.py "${REPORT_DIR}/zap_auth_hook.py"
 
+          # zap-api-scan.py consumes FastAPI's /openapi.json — every
+          # declared route is enumerated and scanned with the Bearer
+          # token injected by the hook. zap-baseline.py's HTML spider
+          # can't discover REST endpoints, which was capping us at ~3
+          # routes (/health plus redirects).
           docker run --rm --network host \
             -v "$(pwd)/${REPORT_DIR}:/zap/wrk" \
             -e ZAP_AUTH_TOKEN="${SUPABASE_SERVICE_KEY}" \
             ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -t http://localhost:8000 \
-            -J "zap_${TS}.json" \
-            --hook=/zap/wrk/zap_auth_hook.py \
-            -d 2>&1 | tee /tmp/zap_output.txt || true
+            zap-api-scan.py \
+              -t http://localhost:8000/openapi.json \
+              -f openapi \
+              -J "zap_${TS}.json" \
+              --hook=/zap/wrk/zap_auth_hook.py \
+              -d 2>&1 | tee /tmp/zap_output.txt || true
 
       - name: Upload security artifacts
         if: always()
