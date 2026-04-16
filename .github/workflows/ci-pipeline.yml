@@ -247,13 +247,13 @@ jobs:
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$(pwd)/${REPORT_DIR}:/output" \
-            aquasec/trivy:latest image \
+            aquasec/trivy:0.58.1 image \
             --format json \
             --output "/output/trivy_${TS}.json" \
             findone-backend:ci 2>&1 || true
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
+            aquasec/trivy:0.58.1 image \
             --exit-code 1 \
             --severity CRITICAL \
             --quiet \
