@@ -218,13 +218,32 @@ jobs:
           TS: ${{ steps.report_dir.outputs.ts }}
         run: |
           docker pull ghcr.io/zaproxy/zaproxy:stable 2>/dev/null || true
-          # Start the backend for ZAP to scan
+          # Start the backend for ZAP to scan. Must cd into backend/ so
+          # that `from app.config` resolves (main.py uses imports
+          # relative to the `app` package, not `backend.app`).
           pip install -r backend/requirements.txt 2>/dev/null || true
-          DATABASE_URL="postgresql://findone:findone@localhost:5432/findone_test" \
-            SUPABASE_URL="" SUPABASE_SERVICE_KEY="" SUPABASE_JWT_SECRET="" \
-            ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" \
-            uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
-          sleep 5
+          (
+            cd backend
+            DATABASE_URL="postgresql://findone:findone@localhost:5432/findone_test" \
+              SUPABASE_URL="" SUPABASE_SERVICE_KEY="" SUPABASE_JWT_SECRET="" \
+              ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" \
+              uvicorn app.main:app --host 0.0.0.0 --port 8000 \
+              > /tmp/uvicorn.log 2>&1 &
+          )
+          # Wait for the backend to listen (or fail loudly).
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:8000/health >/dev/null 2>&1; then
+              echo "backend up after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+          if ! curl -sf http://localhost:8000/health >/dev/null 2>&1; then
+            echo "::error::backend failed to start — ZAP would scan nothing"
+            echo "--- uvicorn.log ---"
+            cat /tmp/uvicorn.log || true
+            exit 1
+          fi
           # Mount the host report dir as /zap/wrk (ZAP's default working
           # directory). The JSON report lands on the host directly, so
           # no second container or copy step is needed. chmod 777 lets
