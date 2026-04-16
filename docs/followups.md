@@ -83,6 +83,55 @@ dominant failure mode).
 
 ---
 
+## ZAP authenticated scan against protected routes
+
+**Reported:** 2026-04-15 · ZAP hardening session
+**Severity:** Low — scan coverage gap, not a security regression.
+
+The CI `OWASP ZAP baseline scan (authenticated)` step enumerates all 57
+OpenAPI-declared endpoints (via `zap-api-scan.py` on `/openapi.json`)
+and injects `Authorization: Bearer <SUPABASE_SERVICE_KEY>` on every
+request through `zap_auth_hook.py`. BUT: Supabase service-role JWTs
+have no `sub` claim, and `backend/app/services/auth.py:validate_supabase_jwt`
+correctly rejects them — so ZAP's 59 authenticated requests all get
+401s. Passive header/cookie checks still run on those responses, but
+route-logic vulnerabilities (stored XSS, IDOR, auth bypass, SQL
+injection through params, etc.) aren't tested.
+
+### Fix
+
+Create a dedicated test user in Supabase and wire CI to exchange
+credentials for a real user access_token before the scan:
+
+1. Supabase dashboard → Authentication → Users → invite
+   `zap-ci@<domain>` with a password only used for CI.
+2. Add to the GitHub `staging` environment:
+   - `ZAP_TEST_EMAIL`
+   - `ZAP_TEST_PASSWORD`
+3. Before the `docker run … zap-api-scan.py …` line, curl Supabase to
+   fetch the access_token:
+   ```bash
+   TOKEN=$(curl -s -X POST "${SUPABASE_URL}/auth/v1/token?grant_type=password" \
+     -H "apikey: ${SUPABASE_ANON_KEY}" \
+     -H "Content-Type: application/json" \
+     -d "{\"email\":\"${ZAP_TEST_EMAIL}\",\"password\":\"${ZAP_TEST_PASSWORD}\"}" \
+     | jq -r .access_token)
+   export ZAP_AUTH_TOKEN="$TOKEN"
+   ```
+   (Anon key is safe to expose via env. Password never leaves the
+   runner.)
+4. The existing hook picks up `ZAP_AUTH_TOKEN` unchanged — no further
+   workflow changes needed.
+
+### Do NOT fix by
+
+Accepting service-role JWTs without a `sub` claim in
+`validate_supabase_jwt`. That would add a production admin-auth path
+to satisfy a CI concern — a real security regression masquerading as a
+testing convenience.
+
+---
+
 ## Add `tsc --noEmit` to frontend CI
 
 **Reported:** 2026-04-15 · Paper Trail refactor final verification
