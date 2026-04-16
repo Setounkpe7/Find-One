@@ -225,16 +225,17 @@ jobs:
             ANTHROPIC_API_KEY="" JSEARCH_API_KEY="" \
             uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
           sleep 5
+          # Mount the host report dir as /zap/wrk (ZAP's default working
+          # directory). The JSON report lands on the host directly, so
+          # no second container or copy step is needed. chmod 777 lets
+          # the non-root 'zap' user inside the container write to it.
+          chmod 777 "${REPORT_DIR}"
           docker run --rm --network host \
+            -v "$(pwd)/${REPORT_DIR}:/zap/wrk" \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py -t http://localhost:8000 \
-            -J "/zap/wrk/zap_${TS}.json" \
+            -J "zap_${TS}.json" \
             -d 2>&1 | tee /tmp/zap_output.txt || true
-          # Copy ZAP report if it was produced inside the container
-          docker run --rm --network host \
-            -v "$(pwd)/${REPORT_DIR}:/out" \
-            ghcr.io/zaproxy/zaproxy:stable \
-            sh -c "cp /zap/wrk/zap_${TS}.json /out/ 2>/dev/null || true" || true
 
       - name: Upload security artifacts
         if: always()
