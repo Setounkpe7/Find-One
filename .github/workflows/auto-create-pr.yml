@@ -49,7 +49,7 @@ jobs:
           gh pr create \
             --base main \
             --head dev \
-            --title "dev → main: $(date +'%Y-%m-%d')" \
+            --title "chore: merge dev into main $(date +'%Y-%m-%d')" \
             --body "${{ steps.summary.outputs.body }}"
 
       - name: Update PR description
