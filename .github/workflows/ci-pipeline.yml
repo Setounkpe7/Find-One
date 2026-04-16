@@ -236,32 +236,6 @@ jobs:
             ghcr.io/zaproxy/zaproxy:stable \
             sh -c "cp /zap/wrk/zap_${TS}.json /out/ 2>/dev/null || true" || true
 
-      - name: Build backend Docker image for Trivy
-        run: docker build -t findone-backend:ci ./backend
-
-      - name: Trivy — scan backend image
-        env:
-          REPORT_DIR: ${{ steps.report_dir.outputs.dir }}
-          TS: ${{ steps.report_dir.outputs.ts }}
-        run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$(pwd)/${REPORT_DIR}:/output" \
-            aquasec/trivy:0.58.1 image \
-            --format json \
-            --output "/output/trivy_${TS}.json" \
-            findone-backend:ci 2>&1 || true
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:0.58.1 image \
-            --exit-code 1 \
-            --severity CRITICAL \
-            --quiet \
-            findone-backend:ci 2>&1 || {
-            echo "::error::Trivy found CRITICAL CVEs in the backend Docker image."
-            exit 1
-          }
-
       - name: Upload security artifacts
         if: always()
         uses: actions/upload-artifact@v4

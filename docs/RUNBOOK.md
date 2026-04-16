@@ -117,24 +117,6 @@ Or check the Deployments tab; the active deployment is marked Current.
 
 ---
 
-### Trivy (CRITICAL CVE in Docker image)
-
-1. Open the Trivy artifact. Note the package, CVE, and fixed-in version.
-2. If the fix is in a newer base image:
-   ```dockerfile
-   # backend/Dockerfile
-   FROM python:3.13-slim  # bump patch version, e.g. 3.13.2 → 3.13.3
-   ```
-3. If the fix is a Python package upgrade, update `backend/requirements.txt` as in the pip-audit flow.
-4. Rebuild and verify locally (optional):
-   ```bash
-   docker build -t find-one-backend ./backend
-   trivy image find-one-backend
-   ```
-5. Commit and push.
-
----
-
 ## 3. Database migrations (production)
 
 Run migrations before deploying backend code that depends on schema changes.

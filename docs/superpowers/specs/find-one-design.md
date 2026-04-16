@@ -199,7 +199,6 @@ GET  /api/*          → FastAPI middleware validates JWT
 | SAST — Python | Bandit + Semgrep |
 | Compliance as code | Checkov (Dockerfile, docker-compose, GitHub Actions YAML) |
 | DAST | OWASP ZAP (baseline scan against backend with real test DB in CI) |
-| Container scanning | Trivy (scans the backend Docker image for CVEs) |
 | SBOM | anchore/sbom-action (generates a Software Bill of Materials on every PR) |
 | Dependency updates | Dependabot (weekly PRs for pip, npm, and GitHub Actions) |
 
@@ -212,7 +211,6 @@ GET  /api/*          → FastAPI middleware validates JWT
 - **Semgrep** — multi-language patterns across the whole codebase (informational)
 - **Checkov** — `Dockerfile`, `docker-compose.yml`, and `.github/workflows/*.yml` for misconfigurations (informational)
 - **OWASP ZAP** — passive HTTP scan against the backend started with a real PostgreSQL test database so that all endpoints are reachable
-- **Trivy** — scans the built `backend` Docker image; **blocks the pipeline** on CRITICAL CVEs
 - **anchore/sbom-action** — produces an SPDX SBOM artifact attached to every PR
 - **Dependabot** — opens weekly dependency-update PRs; each PR goes through the full CI pipeline
 
@@ -229,7 +227,6 @@ Every scan produces a timestamped JSON file (`tool_YYYY-MM-DD_HH-MM-SS.json`). A
 | pip-audit | Any known vulnerability in Python dependencies |
 | npm audit | CRITICAL severity vulnerability in JS dependencies |
 | Bandit | HIGH severity + MEDIUM confidence Python issue |
-| Trivy | CRITICAL CVE in the backend Docker image |
 | Semgrep | Does not block — informational report |
 | Checkov | Does not block — informational report |
 | OWASP ZAP | Does not block — informational report |
@@ -281,7 +278,6 @@ security-scans (environment: production, needs postgres service)
   ├── pip-audit           [BLOCKING — any vulnerability]
   ├── npm audit           [BLOCKING — CRITICAL severity]
   ├── Bandit              [BLOCKING — HIGH severity]
-  ├── Trivy               [BLOCKING — CRITICAL CVE in Docker image]
   ├── Semgrep             [informational]
   ├── Checkov             [informational]
   ├── OWASP ZAP           [informational — scans backend with real test DB]
