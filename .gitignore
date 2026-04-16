@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.vite/
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+*.swp
+
+# Secrets — never commit these
+.env.*
+!.env.example
+vault-data/
+.idea/
+.vscode/
+security-reports/

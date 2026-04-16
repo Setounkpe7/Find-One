@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find-One — Doctolib · Développeur Full-Stack Senior</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--ink-soft);
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+  .breadcrumb a { color: var(--ink-soft); }
+  .breadcrumb .sep { color: var(--sand); }
+
+  .detail-hero {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--terracotta), var(--terracotta-l));
+  }
+
+  .hero-top {
+    display: flex; gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  .hero-logo {
+    width: 72px; height: 72px;
+    border-radius: var(--radius);
+    background: var(--beige);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    border: 1px solid var(--sand-l);
+    flex-shrink: 0;
+  }
+
+  .hero-info { flex: 1; min-width: 0; }
+
+  .hero-company {
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+  .hero-company strong { color: var(--terracotta); font-weight: 700; }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--espresso);
+    line-height: 1.1;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+
+  .hero-meta {
+    display: flex; gap: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+  }
+  .hero-meta span { display: inline-flex; align-items: center; gap: 5px; }
+  .hero-meta .divider { color: var(--sand); }
+
+  .hero-actions {
+    display: flex; gap: 10px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--sand-l);
+  }
+
+  .hero-stat {
+    border-right: 1px solid var(--sand-l);
+    padding: 0 20px;
+  }
+  .hero-stat:first-child { padding-left: 0; }
+  .hero-stat:last-child { border-right: none; padding-right: 0; }
+
+  .hero-stat-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .hero-stat-value {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 600;
+    color: var(--espresso);
+    line-height: 1;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 28px;
+  }
+
+  .content-block {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+
+  .cb-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 16px;
+    position: relative;
+    padding-left: 16px;
+  }
+  .cb-title::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 3px;
+    background: var(--terracotta);
+    border-radius: 2px;
+  }
+
+  .cb-text {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+
+  .cb-list {
+    list-style: none;
+    padding: 0;
+  }
+  .cb-list li {
+    padding: 8px 0 8px 28px;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.55;
+    position: relative;
+  }
+  .cb-list li::before {
+    content: '◆';
+    position: absolute;
+    left: 4px; top: 8px;
+    color: var(--terracotta);
+    font-size: 10px;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--sand-l);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 18px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px; top: 4px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--sand);
+  }
+
+  .timeline-item.done::before { border-color: var(--sage); background: var(--sage); }
+  .timeline-item.current::before {
+    border-color: var(--terracotta);
+    background: var(--terracotta);
+    box-shadow: 0 0 0 4px rgba(192,90,56,0.2);
+  }
+
+  .timeline-date {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--font-display);
+    margin-bottom: 2px;
+  }
+
+  .timeline-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--espresso);
+    margin-bottom: 2px;
+  }
+
+  .timeline-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* AI generation card */
+  .ai-card {
+    background: linear-gradient(135deg, var(--beige) 0%, var(--cream) 100%);
+    border: 1px solid var(--terracotta);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    opacity: 0.07;
+  }
+  .ai-label {
+    display: inline-flex;
+    align-items: center; gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    margin-bottom: 14px;
+  }
+  .ai-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    box-shadow: 0 0 8px var(--terracotta);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .ai-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 6px;
+  }
+  .ai-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .ai-btn-stack { display: flex; flex-direction: column; gap: 8px; }
+
+  .ai-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-sm);
+    color: var(--espresso);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .ai-btn:hover {
+    background: var(--espresso);
+    color: var(--beige);
+    border-color: var(--espresso);
+    text-decoration: none;
+  }
+
+  .ai-btn-icon { font-size: 18px; }
+
+  .notes-area {
+    background: var(--beige);
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.6;
+    min-height: 120px;
+  }
+
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--sand-l);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .contact-row:last-child { border-bottom: none; }
+  .contact-row strong {
+    flex: 1;
+    color: var(--ink-soft);
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body data-active="jobs">
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Tableau de bord</a>
+      <span class="sep">/</span>
+      <a href="job-search.html">Candidatures</a>
+      <span class="sep">/</span>
+      <span>Doctolib · Développeur Full-Stack</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="detail-hero">
+      <div class="hero-top">
+        <div class="hero-logo">🏢</div>
+        <div class="hero-info">
+          <div class="hero-company"><strong>Doctolib</strong> · Technologies de la santé</div>
+          <h1 class="hero-title">Développeur Full-Stack Senior</h1>
+          <div class="hero-meta">
+            <span>📍 Paris 10ème</span>
+            <span class="divider">·</span>
+            <span>💼 CDI · Hybride (3j bureau)</span>
+            <span class="divider">·</span>
+            <span>💰 75–90k€ + BSPCE</span>
+            <span class="divider">·</span>
+            <span>🕐 Publié il y a 3 jours</span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-ghost">♡ Sauvegarder</button>
+          <button class="btn btn-primary">Voir l'annonce originale ↗</button>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Statut</div>
+          <div class="hero-stat-value" style="color:var(--terracotta)">Entretien</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Match</div>
+          <div class="hero-stat-value">94%</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Documents</div>
+          <div class="hero-stat-value">2 générés</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Prochaine étape</div>
+          <div class="hero-stat-value" style="font-size:16px">16 avr · 14h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-col -->
+    <div class="detail-grid">
+      <!-- Left col: description -->
+      <div>
+        <div class="content-block">
+          <h2 class="cb-title">À propos du poste</h2>
+          <p class="cb-text">
+            Rejoignez une équipe produit de 80 personnes pour améliorer l'expérience de millions de patients et de praticiens. Vous travaillerez sur la plateforme de rendez-vous médicaux utilisée par plus de 70 % des praticiens en France.
+          </p>
+          <p class="cb-text">
+            La stack est moderne et la culture technique forte : code review systématique, tests automatisés, déploiement continu. L'équipe est organisée en squads autonomes avec un fort sens du produit.
+          </p>
+        </div>
+
+        <div class="content-block">
+          <h2 class="cb-title">Ce que nous recherchons</h2>
+          <ul class="cb-list">
+            <li>5+ ans d'expérience en développement web full-stack</li>
+            <li>Maîtrise de React et d'un framework back-end moderne (Node.js, Ruby on Rails, Django…)</li>
+            <li>Expérience avec PostgreSQL et les architectures distribuées</li>
+            <li>Sensibilité produit et capacité à collaborer avec des designers et PM</li>
+            <li>Français courant, anglais technique</li>
+          </ul>
+        </div>
+
+        <div class="content-block">
+          <h2 class="cb-title">Vos notes</h2>
+          <div class="notes-area">
+            Contact par Marie Laurent (Tech Lead). Process en 4 étapes : RH · Tech · System design · Culture fit. Ils recherchent quelqu'un pour l'équipe "Praticiens". Ambiance très positive au premier contact.
+          </div>
+        </div>
+      </div>
+
+      <!-- Right col: side actions -->
+      <div class="stack gap-4">
+        <!-- AI generation -->
+        <div class="ai-card">
+          <div class="ai-label">Atelier Claude</div>
+          <div class="ai-title">Générer vos documents</div>
+          <p class="ai-desc">
+            Claude rédige un CV et une lettre adaptés à cette offre à partir de votre profil.
+          </p>
+          <div class="ai-btn-stack">
+            <a class="ai-btn" href="#">
+              <span class="ai-btn-icon">📄</span>
+              <span>Générer un CV sur mesure</span>
+            </a>
+            <a class="ai-btn" href="#">
+              <span class="ai-btn-icon">✉️</span>
+              <span>Rédiger la lettre de motivation</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Pipeline timeline -->
+        <div class="card">
+          <div class="section-header" style="margin-bottom:18px">
+            <div class="section-title" style="font-size:16px">Étapes</div>
+            <a class="section-link" href="#">Modifier</a>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item done">
+              <div class="timeline-date">8 avril</div>
+              <div class="timeline-title">Candidature envoyée</div>
+              <div class="timeline-desc">CV + lettre de motivation</div>
+            </div>
+            <div class="timeline-item done">
+              <div class="timeline-date">10 avril</div>
+              <div class="timeline-title">Premier contact RH</div>
+              <div class="timeline-desc">Échange téléphonique de 30 min avec Marie Laurent</div>
+            </div>
+            <div class="timeline-item current">
+              <div class="timeline-date">16 avril · 14h00</div>
+              <div class="timeline-title">Entretien technique</div>
+              <div class="timeline-desc">Live coding + questions algorithmiques</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-date">À venir</div>
+              <div class="timeline-title">System design</div>
+              <div class="timeline-desc">Avec le principal engineer</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-date">À venir</div>
+              <div class="timeline-title">Culture fit</div>
+              <div class="timeline-desc">Rencontre équipe</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="card">
+          <div class="section-header" style="margin-bottom:10px">
+            <div class="section-title" style="font-size:16px">Contact</div>
+          </div>
+          <div class="contact-row">
+            <strong>Recruteur</strong>
+            <span>Marie Laurent</span>
+          </div>
+          <div class="contact-row">
+            <strong>E-mail</strong>
+            <span style="color:var(--terracotta)">m.laurent@doctolib.fr</span>
+          </div>
+          <div class="contact-row">
+            <strong>LinkedIn</strong>
+            <span style="color:var(--terracotta)">voir le profil ↗</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="_sidebar.js"></script>
+</body>
+</html>

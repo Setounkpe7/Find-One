@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find-One — Recherche d'offres</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .search-hero {
+    background: var(--cream);
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .search-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    opacity: 0.06;
+  }
+
+  .search-bar {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .search-hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 14px;
+    position: relative;
+    z-index: 1;
+    font-style: italic;
+    font-family: var(--font-display);
+  }
+
+  .search-hint strong { color: var(--terracotta); font-style: normal; font-family: var(--font-body); font-weight: 700; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 28px;
+  }
+
+  /* Filters sidebar */
+  .filters {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    height: fit-content;
+    position: sticky;
+    top: 40px;
+  }
+
+  .filters-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--sand-l);
+  }
+
+  .filter-block { margin-bottom: 22px; }
+
+  .filter-block-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--brown-mid);
+    margin-bottom: 10px;
+  }
+
+  .check-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .check-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--ink); cursor: pointer;
+  }
+  .check-row input { accent-color: var(--terracotta); }
+  .check-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+
+  .salary-range {
+    display: flex; gap: 8px; align-items: center;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .salary-range input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+  }
+
+  .clear-filters {
+    width: 100%; text-align: center;
+    padding: 10px;
+    border: 1px dashed var(--sand);
+    background: transparent;
+    color: var(--terracotta);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .clear-filters:hover { background: var(--beige); }
+
+  /* Results */
+  .results-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .results-count {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+  .results-count em { color: var(--terracotta); font-style: italic; font-weight: 700; }
+
+  .sort-select {
+    padding: 8px 14px;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-sm);
+    background: white;
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  /* Job card enhancements for search */
+  .job-card-search {
+    background: white;
+    border: 1px solid var(--sand-l);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 14px;
+  }
+  .job-card-search:hover {
+    border-color: var(--sand);
+    box-shadow: 0 8px 24px var(--shadow-warm);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .jcs-top { display: flex; gap: 16px; align-items: flex-start; }
+  .jcs-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 4px;
+  }
+  .jcs-company {
+    font-size: 13px; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .jcs-company strong { color: var(--espresso); font-weight: 700; }
+
+  .jcs-match {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+    min-width: 80px;
+  }
+  .match-score {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--terracotta);
+    line-height: 1;
+  }
+  .match-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .jcs-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .jcs-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid var(--sand-l);
+  }
+
+  .jcs-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .jcs-posted {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--font-display);
+  }
+
+  .jcs-save {
+    display: inline-flex;
+    align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--sand-l);
+    background: transparent;
+    color: var(--terracotta);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .jcs-save:hover { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+
+  .jcs-body { flex: 1; min-width: 0; }
+  .jcs-actions { display: flex; gap: 12px; align-items: center; }
+</style>
+</head>
+<body data-active="search">
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="eyebrow">Découverte</div>
+        <div class="page-title" style="margin-top:8px">
+          Trouvez <em>votre</em> prochaine aventure.
+          <span>Offres sélectionnées pour correspondre à votre profil</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search hero -->
+    <div class="search-hero">
+      <div class="search-bar">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input class="input" type="text" placeholder="Poste, mot-clé, technologie…" value="Développeur full-stack">
+        </div>
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+          <input class="input" type="text" placeholder="Ville ou Remote" value="Paris">
+        </div>
+        <button class="btn btn-primary">
+          Rechercher
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </div>
+      <div class="search-hint">
+        💡 <strong>142 offres</strong> correspondent à votre recherche — affinez avec les filtres à gauche.
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Filters -->
+      <aside class="filters">
+        <div class="filters-title">Filtres</div>
+
+        <div class="filter-block">
+          <div class="filter-block-title">Type de contrat</div>
+          <div class="check-list">
+            <label class="check-row"><input type="checkbox" checked> CDI <span class="check-count">87</span></label>
+            <label class="check-row"><input type="checkbox"> CDD <span class="check-count">14</span></label>
+            <label class="check-row"><input type="checkbox" checked> Freelance <span class="check-count">28</span></label>
+            <label class="check-row"><input type="checkbox"> Stage <span class="check-count">13</span></label>
+          </div>
+        </div>
+
+        <div class="filter-block">
+          <div class="filter-block-title">Mode de travail</div>
+          <div class="check-list">
+            <label class="check-row"><input type="checkbox" checked> Remote <span class="check-count">42</span></label>
+            <label class="check-row"><input type="checkbox" checked> Hybride <span class="check-count">68</span></label>
+            <label class="check-row"><input type="checkbox"> Sur site <span class="check-count">32</span></label>
+          </div>
+        </div>
+
+        <div class="filter-block">
+          <div class="filter-block-title">Expérience</div>
+          <div class="check-list">
+            <label class="check-row"><input type="checkbox"> Junior (0–2 ans) <span class="check-count">22</span></label>
+            <label class="check-row"><input type="checkbox" checked> Mid (3–5 ans) <span class="check-count">53</span></label>
+            <label class="check-row"><input type="checkbox" checked> Senior (6+ ans) <span class="check-count">67</span></label>
+          </div>
+        </div>
+
+        <div class="filter-block">
+          <div class="filter-block-title">Rémunération (€/an)</div>
+          <div class="salary-range">
+            <input type="number" placeholder="50k" value="70">
+            <span>—</span>
+            <input type="number" placeholder="120k" value="110">
+          </div>
+        </div>
+
+        <button class="clear-filters">Effacer tous les filtres</button>
+      </aside>
+
+      <!-- Results -->
+      <div>
+        <div class="results-header">
+          <div class="results-count"><em>142</em> offres trouvées</div>
+          <select class="sort-select">
+            <option>Les plus pertinentes</option>
+            <option>Les plus récentes</option>
+            <option>Salaire décroissant</option>
+          </select>
+        </div>
+
+        <div class="job-card-search fade-up fade-up-1">
+          <div class="jcs-top">
+            <div class="company-logo">🏢</div>
+            <div class="jcs-body">
+              <div class="jcs-title">Développeur Full-Stack Senior</div>
+              <div class="jcs-company"><strong>Doctolib</strong> · Paris, France · CDI</div>
+            </div>
+            <div class="jcs-match">
+              <div class="match-score">94<span style="font-size:16px;color:var(--ink-soft)">%</span></div>
+              <div class="match-label">Match</div>
+            </div>
+          </div>
+          <div class="jcs-desc">
+            Rejoignez une équipe produit de 80 personnes pour améliorer l'expérience de millions de patients et de praticiens. Stack moderne — React, Node, Kubernetes, PostgreSQL — avec une culture technique forte.
+          </div>
+          <div class="jcs-footer">
+            <div class="jcs-tags">
+              <span class="tag tag-location">Paris 10ème</span>
+              <span class="tag tag-type">CDI · Hybride</span>
+              <span class="tag tag-salary">75–90k€ + BSPCE</span>
+              <span class="tag tag-neutral">React · Node · K8s</span>
+            </div>
+            <div class="jcs-actions">
+              <span class="jcs-posted">publié il y a 3 jours</span>
+              <button class="jcs-save">♡ Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="job-card-search fade-up fade-up-2">
+          <div class="jcs-top">
+            <div class="company-logo">🚀</div>
+            <div class="jcs-body">
+              <div class="jcs-title">Lead Développeur Back-End</div>
+              <div class="jcs-company"><strong>Alan</strong> · Remote (France) · CDI</div>
+            </div>
+            <div class="jcs-match">
+              <div class="match-score">87<span style="font-size:16px;color:var(--ink-soft)">%</span></div>
+              <div class="match-label">Match</div>
+            </div>
+          </div>
+          <div class="jcs-desc">
+            Nous cherchons un·e lead technique pour notre équipe plateforme. Vous définirez les patterns de scalabilité pour une API qui sert 500K utilisateurs. Forte autonomie, équipe 100 % remote.
+          </div>
+          <div class="jcs-footer">
+            <div class="jcs-tags">
+              <span class="tag tag-location">Remote</span>
+              <span class="tag tag-type">CDI</span>
+              <span class="tag tag-salary">85–100k€</span>
+              <span class="tag tag-neutral">Python · Django · AWS</span>
+            </div>
+            <div class="jcs-actions">
+              <span class="jcs-posted">publié hier</span>
+              <button class="jcs-save">♡ Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="job-card-search fade-up fade-up-3">
+          <div class="jcs-top">
+            <div class="company-logo">💡</div>
+            <div class="jcs-body">
+              <div class="jcs-title">Ingénieur Logiciel — Crypto</div>
+              <div class="jcs-company"><strong>Ledger</strong> · Paris · CDI</div>
+            </div>
+            <div class="jcs-match">
+              <div class="match-score">82<span style="font-size:16px;color:var(--ink-soft)">%</span></div>
+              <div class="match-label">Match</div>
+            </div>
+          </div>
+          <div class="jcs-desc">
+            Contribuez à sécuriser des milliards d'euros d'actifs numériques. Produit hardware + software, culture d'ingénierie très forte. Travail avec des équipes internationales.
+          </div>
+          <div class="jcs-footer">
+            <div class="jcs-tags">
+              <span class="tag tag-location">Paris 8ème</span>
+              <span class="tag tag-type">CDI · Hybride</span>
+              <span class="tag tag-salary">80–95k€</span>
+              <span class="tag tag-neutral">Rust · C++ · Cryptographie</span>
+            </div>
+            <div class="jcs-actions">
+              <span class="jcs-posted">publié il y a 5 jours</span>
+              <button class="jcs-save">♡ Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="job-card-search fade-up fade-up-4">
+          <div class="jcs-top">
+            <div class="company-logo">🌐</div>
+            <div class="jcs-body">
+              <div class="jcs-title">Architecte Solutions Cloud</div>
+              <div class="jcs-company"><strong>OVHcloud</strong> · Roubaix · CDI</div>
+            </div>
+            <div class="jcs-match">
+              <div class="match-score">76<span style="font-size:16px;color:var(--ink-soft)">%</span></div>
+              <div class="match-label">Match</div>
+            </div>
+          </div>
+          <div class="jcs-desc">
+            Concevez l'architecture cloud nouvelle génération du leader européen. Impact direct sur la souveraineté numérique, équipes mature, R&D active.
+          </div>
+          <div class="jcs-footer">
+            <div class="jcs-tags">
+              <span class="tag tag-location">Roubaix</span>
+              <span class="tag tag-type">CDI · Hybride</span>
+              <span class="tag tag-salary">90–110k€</span>
+              <span class="tag tag-neutral">Kubernetes · Terraform · Go</span>
+            </div>
+            <div class="jcs-actions">
+              <span class="jcs-posted">publié il y a 2 semaines</span>
+              <button class="jcs-save">♡ Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="_sidebar.js"></script>
+</body>
+</html>

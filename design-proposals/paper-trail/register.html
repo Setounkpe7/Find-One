@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find-One — Créer un compte</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { overflow-x: hidden; }
+
+  .auth-split.reversed .auth-form-inner { max-width: 460px; }
+  .auth-split.reversed .brand-footer { justify-content: flex-end; }
+
+  .brand-top-right { text-align: right; }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .terms {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 18px;
+    line-height: 1.55;
+    display: flex; gap: 10px;
+    align-items: flex-start;
+  }
+  .terms input { margin-top: 3px; accent-color: var(--terracotta); }
+  .terms a { color: var(--terracotta); font-weight: 700; }
+
+  .promise-title {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--beige);
+    margin-bottom: 32px;
+    max-width: 400px;
+    letter-spacing: -0.3px;
+  }
+  .promise-title em { color: var(--terracotta-l); font-style: italic; }
+
+  .promise-list { display: flex; flex-direction: column; gap: 20px; max-width: 400px; }
+
+  .promise-item { display: flex; gap: 16px; align-items: flex-start; }
+
+  .promise-num {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-style: italic;
+    color: var(--terracotta-l);
+    line-height: 1;
+    min-width: 44px;
+    font-weight: 500;
+  }
+
+  .promise-text h3 {
+    font-family: var(--font-display);
+    font-size: 17px; font-weight: 600;
+    color: var(--beige);
+    margin-bottom: 4px;
+  }
+
+  .promise-text p {
+    font-size: 13px;
+    color: var(--sand);
+    line-height: 1.55;
+    opacity: 0.85;
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-split reversed">
+  <!-- Form side -->
+  <div class="auth-form-side">
+    <div class="auth-form-inner">
+      <div class="auth-eyebrow">Création de compte · gratuit</div>
+      <h1 class="auth-title">Commencez votre <em>parcours</em>.</h1>
+      <p class="auth-sub">
+        Trois minutes pour créer votre compte. Ensuite, vos candidatures s'organisent toutes seules.
+      </p>
+
+      <form>
+        <div class="field-grid">
+          <div class="field">
+            <label class="label">Prénom</label>
+            <input class="input" type="text" placeholder="Martin">
+          </div>
+          <div class="field">
+            <label class="label">Nom</label>
+            <input class="input" type="text" placeholder="Doubin">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Adresse e-mail</label>
+          <input class="input" type="email" placeholder="vous@exemple.com">
+          <div class="field-hint">Nous ne vous enverrons jamais de spam.</div>
+        </div>
+
+        <div class="field">
+          <label class="label">Mot de passe</label>
+          <input class="input" type="password" placeholder="Au moins 8 caractères">
+          <div class="field-hint">8 caractères minimum, un chiffre et une majuscule.</div>
+        </div>
+
+        <label class="terms">
+          <input type="checkbox" checked>
+          <span>
+            J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a>.
+          </span>
+        </label>
+
+        <button class="btn btn-primary auth-submit" type="button">
+          Créer mon compte
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+
+      <div class="divider">ou avec</div>
+
+      <div class="oauth-row">
+        <button class="oauth-btn">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09 0-.73.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+        <button class="oauth-btn">
+          <svg viewBox="0 0 24 24"><path fill="#0A66C2" d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43c-1.14 0-2.07-.92-2.07-2.07S4.2 3.29 5.34 3.29c1.14 0 2.07.92 2.07 2.07 0 1.14-.93 2.07-2.07 2.07zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+          LinkedIn
+        </button>
+      </div>
+
+      <div class="auth-switch">
+        Déjà un compte ? <a href="login.html">Se connecter</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Brand side -->
+  <div class="auth-brand">
+    <div class="brand-top-right">
+      <div class="brand-logo">Find<span>·</span>One</div>
+      <div class="brand-logo-sub">Votre parcours, votre récit</div>
+    </div>
+
+    <div>
+      <div class="promise-title">
+        Ce qui vous attend <em>à l'intérieur</em>.
+      </div>
+
+      <div class="promise-list">
+        <div class="promise-item">
+          <div class="promise-num">I.</div>
+          <div class="promise-text">
+            <h3>Un tableau de bord clair</h3>
+            <p>Chaque offre, chaque étape, chaque échange — rassemblés au même endroit.</p>
+          </div>
+        </div>
+
+        <div class="promise-item">
+          <div class="promise-num">II.</div>
+          <div class="promise-text">
+            <h3>Des CV & lettres sur mesure</h3>
+            <p>Claude rédige une lettre adaptée à chaque offre à partir de votre profil.</p>
+          </div>
+        </div>
+
+        <div class="promise-item">
+          <div class="promise-num">III.</div>
+          <div class="promise-text">
+            <h3>Une recherche sans bruit</h3>
+            <p>Les offres qui vous ressemblent, sans les dizaines qui vous font perdre du temps.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      <span>© 2026</span>
+      <a href="#">Conditions</a>
+      <a href="#">Confidentialité</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
