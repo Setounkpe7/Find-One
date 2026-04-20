@@ -31,3 +31,6 @@ vault-data/
 .idea/
 .vscode/
 security-reports/
+
+# Vercel CLI local link artifacts (contain project/org IDs, no secrets but repo-specific)
+.vercel
