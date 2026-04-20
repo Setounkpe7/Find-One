@@ -32,7 +32,9 @@ The docs say 3.12 is the default; on my project it effectively isn’t.
 | `Pipfile` + `Pipfile.lock` at root with `python_version = "3.12"` | `Using CPython 3.14.3` |
 | `PYTHON_VERSION=3.12` env var on the project (all three scopes) | `Using CPython 3.14.3` |
 | Project Settings → Node.js: 24.x → 22.x (confirmed by `Skipping build cache since Node.js version changed from "24.x" to "22.x"`) | `Using CPython 3.14.3` |
-| `package.json engines.node = "22.x"` | `Using CPython 3.14.3` |
+| Project Settings → Node.js: 22.x → 20.x (build log again confirms the change) | `Using CPython 3.14.3` |
+| `package.json engines.node` = `"22.x"` | `Using CPython 3.14.3` |
+| `package.json engines.node` = `"20.x"` | `Using CPython 3.14.3` |
 
 ### Representative build log (no pin at all)
 
@@ -80,7 +82,7 @@ from app.main import app  # noqa: F401
 
 - Created 2026-04-14 (recent)
 - Framework Preset: Other
-- Node.js: 22.x (recently switched from 24.x, no effect on Python)
+- Node.js: tested 24.x, 22.x and 20.x — all three yield `Using CPython 3.14.3`
 - Region: iad1
 - Plan: Hobby
 - `package.json` lives in `frontend/`
