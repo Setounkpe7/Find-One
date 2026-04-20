@@ -4,7 +4,7 @@ from app.config import settings
 
 _url = settings.database_url
 if _url.startswith("postgresql://"):
-    _url = _url.replace("postgresql://", "postgresql+psycopg://", 1)
+    _url = _url.replace("postgresql://", "postgresql+pg8000://", 1)
 engine = create_engine(_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
