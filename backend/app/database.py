@@ -2,10 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.config import settings
 
-_url = settings.database_url
-if _url.startswith("postgresql://"):
-    _url = _url.replace("postgresql://", "postgresql+pg8000://", 1)
-engine = create_engine(_url)
+engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
