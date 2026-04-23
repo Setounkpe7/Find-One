@@ -34,3 +34,6 @@ security-reports/
 
 # Vercel CLI local link artifacts (contain project/org IDs, no secrets but repo-specific)
 .vercel
+
+# Claude Code instructions — kept local, not shared via git
+CLAUDE.md
