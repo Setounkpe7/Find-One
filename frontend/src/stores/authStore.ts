@@ -2,11 +2,16 @@ import { create } from 'zustand'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
+interface RegisterResult {
+  needsEmailConfirmation: boolean
+}
+
 interface AuthState {
   user: User | null
   session: Session | null
   login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string) => Promise<RegisterResult>
+  resendConfirmation: (email: string) => Promise<void>
   logout: () => Promise<void>
   loadSession: () => Promise<void>
 }
@@ -25,6 +30,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
     set({ user: data.user ?? null, session: data.session ?? null })
+    return { needsEmailConfirmation: data.session === null }
+  },
+
+  resendConfirmation: async (email) => {
+    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    if (error) throw error
   },
 
   logout: async () => {
