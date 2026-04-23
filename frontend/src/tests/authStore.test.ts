@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 
 const signUp = vi.fn()
 const resend = vi.fn()
+const getSession = vi.fn()
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -11,15 +12,17 @@ vi.mock('../lib/supabase', () => ({
       signOut: vi.fn().mockResolvedValue({ error: null }),
       signUp: (...args: unknown[]) => signUp(...args),
       resend: (...args: unknown[]) => resend(...args),
+      getSession: (...args: unknown[]) => getSession(...args),
     },
   },
 }))
 
 describe('authStore', () => {
   beforeEach(() => {
-    useAuthStore.setState({ user: null, session: null })
+    useAuthStore.setState({ user: null, session: null, initialized: false })
     signUp.mockReset()
     resend.mockReset()
+    getSession.mockReset()
   })
 
   it('starts with no user', () => {
@@ -83,5 +86,30 @@ describe('authStore', () => {
     await expect(
       useAuthStore.getState().resendConfirmation('a@b.com'),
     ).rejects.toThrow('rate_limited')
+  })
+
+  it('loadSession flips initialized=true on success', async () => {
+    getSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'tok',
+          user: { id: 'u1', email: 'a@b.com' } as Partial<User>,
+        } as Partial<Session>,
+      },
+      error: null,
+    })
+    expect(useAuthStore.getState().initialized).toBe(false)
+    await useAuthStore.getState().loadSession()
+    expect(useAuthStore.getState().initialized).toBe(true)
+    expect(useAuthStore.getState().session?.access_token).toBe('tok')
+  })
+
+  it('loadSession flips initialized=true even when getSession rejects', async () => {
+    getSession.mockRejectedValue(new Error('network'))
+    await expect(useAuthStore.getState().loadSession()).rejects.toThrow(
+      'network',
+    )
+    expect(useAuthStore.getState().initialized).toBe(true)
+    expect(useAuthStore.getState().session).toBeNull()
   })
 })

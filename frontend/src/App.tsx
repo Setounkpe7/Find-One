@@ -12,8 +12,12 @@ import Profile from './pages/Profile'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const session = useAuthStore((s) => s.session)
+  const initialized = useAuthStore((s) => s.initialized)
   const location = useLocation()
 
+  if (!initialized) {
+    return null
+  }
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
