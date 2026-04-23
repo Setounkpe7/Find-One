@@ -45,17 +45,19 @@ jobs:
         if: steps.check_pr.outputs.pr_number == ''
         env:
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          PR_BODY: ${{ steps.summary.outputs.body }}
         run: |
           gh pr create \
             --base main \
             --head dev \
             --title "chore: merge dev into main $(date +'%Y-%m-%d')" \
-            --body "${{ steps.summary.outputs.body }}"
+            --body "$PR_BODY"
 
       - name: Update PR description
         if: steps.check_pr.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          PR_BODY: ${{ steps.summary.outputs.body }}
+          PR_NUMBER: ${{ steps.check_pr.outputs.pr_number }}
         run: |
-          gh pr edit "${{ steps.check_pr.outputs.pr_number }}" \
-            --body "${{ steps.summary.outputs.body }}"
+          gh pr edit "$PR_NUMBER" --body "$PR_BODY"
