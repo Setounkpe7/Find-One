@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 revision: str = "9a22ed8c7e07"
@@ -32,18 +33,19 @@ DOC_TYPE_VALUES = ("cv", "cover_letter")
 
 
 def upgrade() -> None:
-    job_status = sa.Enum(*JOB_STATUS_VALUES, name="jobstatus")
-    contract_type = sa.Enum(*CONTRACT_TYPE_VALUES, name="contracttype")
-    job_source = sa.Enum(*JOB_SOURCE_VALUES, name="jobsource")
-    file_type = sa.Enum(*FILE_TYPE_VALUES, name="filetype")
-    doc_type = sa.Enum(*DOC_TYPE_VALUES, name="doctype")
+    # create_type=False prevents SQLAlchemy from auto-issuing CREATE TYPE when
+    # these enums are first referenced inside op.create_table — otherwise the
+    # explicit .create() below plus the implicit one collide with
+    # DuplicateObject on fresh Postgres databases.
+    job_status = postgresql.ENUM(*JOB_STATUS_VALUES, name="jobstatus", create_type=False)
+    contract_type = postgresql.ENUM(*CONTRACT_TYPE_VALUES, name="contracttype", create_type=False)
+    job_source = postgresql.ENUM(*JOB_SOURCE_VALUES, name="jobsource", create_type=False)
+    file_type = postgresql.ENUM(*FILE_TYPE_VALUES, name="filetype", create_type=False)
+    doc_type = postgresql.ENUM(*DOC_TYPE_VALUES, name="doctype", create_type=False)
 
     bind = op.get_bind()
-    job_status.create(bind, checkfirst=True)
-    contract_type.create(bind, checkfirst=True)
-    job_source.create(bind, checkfirst=True)
-    file_type.create(bind, checkfirst=True)
-    doc_type.create(bind, checkfirst=True)
+    for enum_type in (job_status, contract_type, job_source, file_type, doc_type):
+        enum_type.create(bind, checkfirst=True)
 
     op.create_table(
         "job_offers",
@@ -65,7 +67,6 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
-    op.create_index("ix_job_offers_user_id", "job_offers", ["user_id"])
 
     op.create_table(
         "user_profiles",
@@ -86,7 +87,6 @@ def upgrade() -> None:
         sa.Column("file_type", file_type, nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
-    op.create_index("ix_templates_user_id", "templates", ["user_id"])
 
     op.create_table(
         "generated_documents",
@@ -101,20 +101,14 @@ def upgrade() -> None:
         sa.Column("instructions_snapshot", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
-    op.create_index(
-        "ix_generated_documents_user_id", "generated_documents", ["user_id"]
-    )
 
 
 def downgrade() -> None:
-    op.drop_index("ix_generated_documents_user_id", table_name="generated_documents")
     op.drop_table("generated_documents")
-    op.drop_index("ix_templates_user_id", table_name="templates")
     op.drop_table("templates")
     op.drop_table("user_profiles")
-    op.drop_index("ix_job_offers_user_id", table_name="job_offers")
     op.drop_table("job_offers")
 
     bind = op.get_bind()
     for name in ("doctype", "filetype", "jobsource", "contracttype", "jobstatus"):
-        sa.Enum(name=name).drop(bind, checkfirst=True)
+        postgresql.ENUM(name=name).drop(bind, checkfirst=True)
