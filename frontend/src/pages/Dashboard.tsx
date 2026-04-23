@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
 import { apiFetch } from '../lib/api'
+import { useAuthStore } from '../stores/authStore'
 import { JobCardPT } from '../components/JobCardPT'
 import { JobForm } from '../components/JobForm'
 import type { JobOffer } from '../lib/types'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { PageHeader } from '../components/ui/PageHeader'
+
+function displayName(email: string | undefined): string {
+  if (!email) return ''
+  const local = email.split('@')[0]
+  return local.charAt(0).toUpperCase() + local.slice(1)
+}
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -25,6 +32,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const user = useAuthStore((s) => s.user)
+  const greeting = displayName(user?.email)
 
   async function load() {
     setLoading(true)
@@ -52,9 +61,13 @@ export default function Dashboard() {
     <>
       <PageHeader
         title={
-          <>
-            Bonjour <em>Martin</em>
-          </>
+          greeting ? (
+            <>
+              Bonjour <em>{greeting}</em>
+            </>
+          ) : (
+            <>Bonjour</>
+          )
         }
         subtitle={`${stats.total} candidature${stats.total > 1 ? 's' : ''} en cours`}
         actions={

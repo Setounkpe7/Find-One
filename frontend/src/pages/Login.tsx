@@ -19,8 +19,8 @@ export default function Login() {
     try {
       await useAuthStore.getState().login(email, password)
       navigate('/')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Identifiants invalides')
+    } catch {
+      setError('Identifiants invalides')
     } finally {
       setLoading(false)
     }
