@@ -1,11 +1,16 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/auth/(.*)", "destination": "/api/index.py" },
-    { "source": "/health", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "experimentalServices": {
+    "web": {
+      "entrypoint": "frontend",
+      "framework": "vite",
+      "routePrefix": "/"
+    },
+    "api": {
+      "entrypoint": "api/index.py",
+      "framework": "fastapi",
+      "routePrefix": "/server",
+      "includeFiles": "backend/**"
+    }
+  }
 }
