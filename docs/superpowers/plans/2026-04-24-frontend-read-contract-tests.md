@@ -208,7 +208,11 @@ const apiFetchMock = buildApiFetchMock([
   },
 ])
 
-vi.mock('../lib/api', () => ({ apiFetch: apiFetchMock }))
+vi.mock('../lib/api', () => ({
+  get apiFetch() {
+    return apiFetchMock
+  },
+}))
 
 vi.mock('../stores/authStore', () => ({
   useAuthStore: (selector: (s: { user: { email: string } }) => unknown) =>
@@ -324,7 +328,11 @@ const apiFetchMock = buildApiFetchMock([
   },
 ])
 
-vi.mock('../lib/api', () => ({ apiFetch: apiFetchMock }))
+vi.mock('../lib/api', () => ({
+  get apiFetch() {
+    return apiFetchMock
+  },
+}))
 
 // DocViewer has its own API calls — stub it so JobDetail's test is hermetic.
 vi.mock('../components/DocViewer', () => ({
@@ -438,7 +446,11 @@ const apiFetchMock = buildApiFetchMock([
   },
 ])
 
-vi.mock('../lib/api', () => ({ apiFetch: apiFetchMock }))
+vi.mock('../lib/api', () => ({
+  get apiFetch() {
+    return apiFetchMock
+  },
+}))
 
 import Templates from '../pages/Templates'
 
@@ -523,7 +535,11 @@ const apiFetchMock = buildApiFetchMock([
   },
 ])
 
-vi.mock('../lib/api', () => ({ apiFetch: apiFetchMock }))
+vi.mock('../lib/api', () => ({
+  get apiFetch() {
+    return apiFetchMock
+  },
+}))
 
 vi.mock('../components/JobForm', () => ({
   JobForm: () => null,
@@ -624,7 +640,11 @@ const apiFetchMock = buildApiFetchMock([
   },
 ])
 
-vi.mock('../lib/api', () => ({ apiFetch: apiFetchMock }))
+vi.mock('../lib/api', () => ({
+  get apiFetch() {
+    return apiFetchMock
+  },
+}))
 
 import { JobForm } from '../components/JobForm'
 
