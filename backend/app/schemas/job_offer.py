@@ -5,6 +5,8 @@ from app.models.job_offer import JobStatus, ContractType, JobSource
 
 
 class JobOfferCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: str
     company: str
     url: Optional[str] = None
@@ -21,6 +23,8 @@ class JobOfferCreate(BaseModel):
 
 
 class JobOfferUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: Optional[str] = None
     company: Optional[str] = None
     url: Optional[str] = None

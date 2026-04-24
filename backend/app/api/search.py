@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from app.deps import get_current_user
 from app.services.scraper import scrape_url
 from app.services.jsearch import search_jobs
@@ -8,6 +8,8 @@ router = APIRouter(prefix="/api/search", tags=["search"])
 
 
 class UrlImportRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     url: str
 
     @field_validator("url")

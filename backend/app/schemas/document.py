@@ -1,9 +1,11 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.generated_doc import DocType
 
 
 class GenerateDocRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     job_offer_id: str
     doc_type: DocType
     language: str = "fr"

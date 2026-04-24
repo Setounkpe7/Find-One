@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class UserProfileOut(BaseModel):
@@ -7,9 +7,11 @@ class UserProfileOut(BaseModel):
     generation_instructions: Optional[str] = None
     preferred_language: str = "fr"
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserProfileUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     generation_instructions: Optional[str] = None
     preferred_language: Optional[str] = None
