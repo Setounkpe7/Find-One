@@ -15,21 +15,21 @@ export interface JobOffer {
 }
 
 export const STATUS_LABELS: Record<string, string> = {
+  to_apply: 'À postuler',
   applied: 'Candidature envoyée',
   interview_scheduled: 'Entretien planifié',
   offer_received: 'Offre reçue',
   rejected: 'Refusé',
-  withdrawn: 'Retiré',
-  saved: 'Sauvegardé',
+  abandoned: 'Abandonnée',
 }
 
 export const STATUS_COLORS: Record<string, string> = {
+  to_apply: '#f59e0b',
   applied: '#3b82f6',
   interview_scheduled: '#8b5cf6',
   offer_received: '#10b981',
   rejected: '#6b7280',
-  withdrawn: '#6b7280',
-  saved: '#f59e0b',
+  abandoned: '#6b7280',
 }
 
 export function getStatusColor(status: string): string {
