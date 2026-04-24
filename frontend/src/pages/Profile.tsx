@@ -8,11 +8,11 @@ import { Select } from '../components/ui/Select'
 import { PageHeader } from '../components/ui/PageHeader'
 
 type ProfileForm = {
-  instructions: string
-  language: 'fr' | 'en' | 'es' | 'de'
+  generation_instructions: string
+  preferred_language: 'fr' | 'en' | 'es' | 'de'
 }
 
-const EMPTY: ProfileForm = { instructions: '', language: 'fr' }
+const EMPTY: ProfileForm = { generation_instructions: '', preferred_language: 'fr' }
 
 export default function Profile() {
   const [form, setForm] = useState<ProfileForm>(EMPTY)
@@ -26,7 +26,12 @@ export default function Profile() {
     apiFetch('/api/profile')
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setForm({ instructions: data.instructions ?? '', language: data.language ?? 'fr' })
+        if (!cancelled) {
+          setForm({
+            generation_instructions: data.generation_instructions ?? '',
+            preferred_language: data.preferred_language ?? 'fr',
+          })
+        }
       })
       .catch((e) => !cancelled && setError(e instanceof Error ? e.message : 'Erreur de chargement'))
       .finally(() => !cancelled && setLoading(false))
@@ -76,8 +81,8 @@ export default function Profile() {
             <Textarea
               id="instructions"
               rows={8}
-              value={form.instructions}
-              onChange={(e) => setForm({ ...form, instructions: e.target.value })}
+              value={form.generation_instructions}
+              onChange={(e) => setForm({ ...form, generation_instructions: e.target.value })}
               placeholder="Ex. : développeur full-stack senior, 8 ans d'expérience, passionné par les produits B2B…"
             />
           </Field>
@@ -85,8 +90,8 @@ export default function Profile() {
           <Field label="Langue des documents générés" htmlFor="language">
             <Select
               id="language"
-              value={form.language}
-              onChange={(e) => setForm({ ...form, language: e.target.value as ProfileForm['language'] })}
+              value={form.preferred_language}
+              onChange={(e) => setForm({ ...form, preferred_language: e.target.value as ProfileForm['preferred_language'] })}
             >
               <option value="fr">Français</option>
               <option value="en">English</option>
