@@ -14,9 +14,9 @@ function displayName(email: string | undefined): string {
   return local.charAt(0).toUpperCase() + local.slice(1)
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value, testId }: { label: string; value: number; testId?: string }) {
   return (
-    <Card>
+    <Card data-testid={testId}>
       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
         {label}
       </div>
@@ -78,9 +78,9 @@ export default function Dashboard() {
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }}>
-        <Stat label="Total" value={stats.total} />
-        <Stat label="Entretiens" value={stats.interviews} />
-        <Stat label="Offres" value={stats.offers} />
+        <Stat label="Total" value={stats.total} testId="stat-card-total" />
+        <Stat label="Entretiens" value={stats.interviews} testId="stat-card-interviews" />
+        <Stat label="Offres" value={stats.offers} testId="stat-card-offers" />
       </div>
 
       <div className="section-header">

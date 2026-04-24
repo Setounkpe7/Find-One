@@ -108,7 +108,7 @@ export default function JobDetail() {
         subtitle={[offer.location, offer.contract_type, offer.salary].filter(Boolean).join(' · ')}
         actions={
           <>
-            <Badge variant={statusToVariant(offer.status)}>
+            <Badge variant={statusToVariant(offer.status)} data-testid="job-status-badge">
               {STATUS_LABELS[offer.status] ?? offer.status}
             </Badge>
             <Button size="sm" variant="ghost" onClick={() => setShowEdit(true)}>
