@@ -29,14 +29,22 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    })
     if (error) throw error
     set({ user: data.user ?? null, session: data.session ?? null })
     return { needsEmailConfirmation: data.session === null }
   },
 
   resendConfirmation: async (email) => {
-    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    })
     if (error) throw error
   },
 

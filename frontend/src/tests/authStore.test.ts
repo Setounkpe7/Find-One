@@ -75,10 +75,27 @@ describe('authStore', () => {
     ).rejects.toThrow('signup_blocked')
   })
 
-  it('resendConfirmation calls supabase.auth.resend with signup type', async () => {
+  it('resendConfirmation calls supabase.auth.resend with signup type and emailRedirectTo', async () => {
     resend.mockResolvedValue({ error: null })
     await useAuthStore.getState().resendConfirmation('a@b.com')
-    expect(resend).toHaveBeenCalledWith({ type: 'signup', email: 'a@b.com' })
+    expect(resend).toHaveBeenCalledWith({
+      type: 'signup',
+      email: 'a@b.com',
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    })
+  })
+
+  it('register forwards emailRedirectTo pointing at the current origin', async () => {
+    signUp.mockResolvedValue({
+      data: { user: { id: 'u3' } as Partial<User>, session: null },
+      error: null,
+    })
+    await useAuthStore.getState().register('a@b.com', 'TestPass123!')
+    expect(signUp).toHaveBeenCalledWith({
+      email: 'a@b.com',
+      password: 'TestPass123!',
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    })
   })
 
   it('resendConfirmation surfaces errors', async () => {
