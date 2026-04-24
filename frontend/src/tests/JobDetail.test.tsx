@@ -66,13 +66,8 @@ describe('JobDetail (read contract)', () => {
   it('renders title, company, status label from JobOffer', async () => {
     renderDetail()
     expect(await screen.findByText('Staff Platform Engineer')).toBeInTheDocument()
-    // Company appears in the eyebrow.
     expect(screen.getByText('Contoso')).toBeInTheDocument()
-    // "applied" → "Candidature envoyée" via STATUS_LABELS.
-    // The literal also appears as a Row label for applied_at, so scope to the Badge.
-    const labels = screen.getAllByText('Candidature envoyée')
-    const badge = labels.find((el) => el.className.includes('badge'))
-    expect(badge).toBeDefined()
+    expect(screen.getByTestId('job-status-badge')).toHaveTextContent('Candidature envoyée')
   })
 
   it('renders location, contract_type, salary in subtitle', async () => {

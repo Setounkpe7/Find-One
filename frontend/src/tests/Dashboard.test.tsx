@@ -66,18 +66,10 @@ describe('Dashboard (read contract)', () => {
 
   it('counts interview_scheduled + offer_received from status field', async () => {
     renderDashboard()
-    // Wait for the list to render (proves load() finished).
     await screen.findByText('Staff Engineer')
 
-    // Stat cards render label + numeric value. "Entretiens" should show 1,
-    // "Offres" should show 1. Walk up from the label to the containing Card.
-    const interviewsLabel = screen.getByText('Entretiens')
-    const interviewsCard = interviewsLabel.parentElement!
-    expect(interviewsCard.textContent).toMatch(/1/)
-
-    const offersLabel = screen.getByText('Offres')
-    const offersCard = offersLabel.parentElement!
-    expect(offersCard.textContent).toMatch(/1/)
+    expect(screen.getByTestId('stat-card-interviews').textContent).toMatch(/1/)
+    expect(screen.getByTestId('stat-card-offers').textContent).toMatch(/1/)
   })
 
   it('derives the greeting name from the authenticated user email', async () => {
