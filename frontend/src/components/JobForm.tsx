@@ -8,14 +8,18 @@ interface JobFormProps {
   onClose: () => void
 }
 
-const CONTRACT_TYPES = ['CDI', 'CDD', 'Freelance', 'Stage', 'Alternance']
+const CONTRACT_TYPES = [
+  { value: 'cdi', label: 'CDI' },
+  { value: 'cdd', label: 'CDD' },
+  { value: 'freelance', label: 'Freelance' },
+]
 const STATUSES = [
-  { value: 'saved', label: 'Sauvegardé' },
+  { value: 'to_apply', label: 'À postuler' },
   { value: 'applied', label: 'Candidature envoyée' },
   { value: 'interview_scheduled', label: 'Entretien planifié' },
   { value: 'offer_received', label: 'Offre reçue' },
   { value: 'rejected', label: 'Refusé' },
-  { value: 'withdrawn', label: 'Retiré' },
+  { value: 'abandoned', label: 'Abandonnée' },
 ]
 
 export function JobForm({ initialData, onSave, onClose }: JobFormProps) {
@@ -29,7 +33,7 @@ export function JobForm({ initialData, onSave, onClose }: JobFormProps) {
     salary: initialData?.salary ?? '',
     contract_type: initialData?.contract_type ?? '',
     recruiter_name: initialData?.recruiter_name ?? '',
-    status: initialData?.status ?? 'applied',
+    status: initialData?.status ?? 'to_apply',
     applied_at: initialData?.applied_at ?? '',
     followup_date: initialData?.followup_date ?? '',
     interview_date: initialData?.interview_date ?? '',
@@ -190,7 +194,7 @@ export function JobForm({ initialData, onSave, onClose }: JobFormProps) {
               >
                 <option value="">— Sélectionner —</option>
                 {CONTRACT_TYPES.map((ct) => (
-                  <option key={ct} value={ct}>{ct}</option>
+                  <option key={ct.value} value={ct.value}>{ct.label}</option>
                 ))}
               </select>
             </div>
