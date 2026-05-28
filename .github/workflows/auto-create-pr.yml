@@ -44,7 +44,7 @@ jobs:
       - name: Create PR
         if: steps.check_pr.outputs.pr_number == ''
         env:
-          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.FIND_ONE_PR_TOKEN }}
           PR_BODY: ${{ steps.summary.outputs.body }}
         run: |
           gh pr create \
@@ -56,7 +56,7 @@ jobs:
       - name: Update PR description
         if: steps.check_pr.outputs.pr_number != ''
         env:
-          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.FIND_ONE_PR_TOKEN }}
           PR_BODY: ${{ steps.summary.outputs.body }}
           PR_NUMBER: ${{ steps.check_pr.outputs.pr_number }}
         run: |
