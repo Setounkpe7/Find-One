@@ -1,13 +1,14 @@
-import os
-import tempfile
+import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.template import Template, FileType
 from app.schemas.template import TemplateOut
-from app.services.template_parser import parse_template
+from app.services.template_parser import parse_template_bytes
 from app.services.storage import upload_file
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/templates", tags=["templates"])
 
@@ -34,17 +35,20 @@ async def upload_template(
 
     file_bytes = await file.read()
 
-    with tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False) as tmp:
-        tmp.write(file_bytes)
-        tmp_path = tmp.name
     try:
-        parse_template(tmp_path, ext)
+        parse_template_bytes(file_bytes, ext)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Could not read file: {e}")
-    finally:
-        os.unlink(tmp_path)
 
-    file_path = upload_file(file_bytes, filename)
+    try:
+        file_path = upload_file(file_bytes, filename)
+    except Exception as e:
+        logger.error("Template upload to storage failed: %s", e)
+        raise HTTPException(
+            status_code=502,
+            detail="File storage is unavailable. Please try again later.",
+        )
+
     template = Template(
         user_id=user["user_id"],
         name=name,

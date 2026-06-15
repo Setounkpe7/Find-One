@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+import logging
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.limiter import limiter
 from app.deps import get_current_user
 from app.models.job_offer import JobOffer
 from app.models.template import Template
@@ -9,9 +11,22 @@ from app.models.user_profile import UserProfile
 from app.models.generated_doc import GeneratedDocument
 from app.schemas.document import GenerateDocRequest
 from app.services.doc_generator import build_prompt, stream_generation
-from app.services.template_parser import parse_template
+from app.services.template_parser import parse_template_bytes
+from app.services.storage import read_file
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
+
+
+def _read_template(tmpl: Template) -> tuple[str, str | None]:
+    """Download a stored template and parse it; degrade to "no template" on failure."""
+    try:
+        data = read_file(str(tmpl.file_path))
+        return parse_template_bytes(data, str(tmpl.file_type.value)), str(tmpl.id)
+    except Exception as e:
+        logger.warning("Could not read template %s: %s", tmpl.id, e)
+        return "", None
 
 
 def _find_best_template(
@@ -24,7 +39,7 @@ def _find_best_template(
             .first()
         )
         if tmpl:
-            return parse_template(str(tmpl.file_path), str(tmpl.file_type.value)), str(tmpl.id)
+            return _read_template(tmpl)
 
     tmpl = (
         db.query(Template)
@@ -32,17 +47,19 @@ def _find_best_template(
         .first()
     )
     if tmpl:
-        return parse_template(str(tmpl.file_path), str(tmpl.file_type.value)), str(tmpl.id)
+        return _read_template(tmpl)
 
     tmpl = db.query(Template).filter(Template.user_id == user_id).first()
     if tmpl:
-        return parse_template(str(tmpl.file_path), str(tmpl.file_type.value)), str(tmpl.id)
+        return _read_template(tmpl)
 
     return "", None
 
 
 @router.post("/generate")
+@limiter.limit("30/hour")
 async def generate_document(
+    request: Request,
     body: GenerateDocRequest,
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),

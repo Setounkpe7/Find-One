@@ -5,6 +5,7 @@ import { authErrorMessage } from '../lib/authErrors'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Field } from '../components/ui/Field'
+import { AuthBrand, AuthBrandStatement } from '../components/ui/AuthBrand'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -29,56 +30,18 @@ export default function Login() {
 
   return (
     <div className="auth-split">
-      <div className="auth-brand">
-        <div>
-          <div className="brand-logo">
-            Find<span>·</span>One
-          </div>
-          <div className="brand-logo-sub">Votre parcours, votre récit</div>
-        </div>
-
-        <div style={{ maxWidth: 440 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontStyle: 'italic',
-              fontSize: 34,
-              lineHeight: 1.25,
-              color: 'var(--beige)',
-              marginBottom: 24,
-            }}
-          >
-            Chaque candidature est une{' '}
-            <em style={{ color: 'var(--terracotta-l)' }}>page</em> du livre que
-            vous êtes en train d'écrire.
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--sand)',
-              letterSpacing: 1.5,
-              textTransform: 'uppercase',
-            }}
-          >
-            <strong
-              style={{
-                color: 'var(--beige)',
-                display: 'block',
-                marginBottom: 4,
-                textTransform: 'none',
-                fontSize: 14,
-              }}
-            >
-              Find-One
-            </strong>
-            Le compagnon de votre recherche d'emploi
-          </div>
-        </div>
-
-        <div className="brand-footer">
-          <span>© 2026 Find-One</span>
-        </div>
-      </div>
+      <AuthBrand>
+        <AuthBrandStatement
+          quote={
+            <>
+              Chaque candidature est une{' '}
+              <em>page</em> du livre que vous êtes en train d'écrire.
+            </>
+          }
+          eyebrowTitle="Find-One"
+          eyebrowSub="Le compagnon de votre recherche d'emploi"
+        />
+      </AuthBrand>
 
       <div className="auth-form-side">
         <div className="auth-form-inner">

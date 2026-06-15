@@ -1,60 +1,23 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
+import { AuthBrand, AuthBrandStatement } from '../components/ui/AuthBrand'
 
 export default function NotFound() {
   const navigate = useNavigate()
 
   return (
     <div className="auth-split">
-      <div className="auth-brand">
-        <div>
-          <div className="brand-logo">
-            Find<span>·</span>One
-          </div>
-          <div className="brand-logo-sub">Votre parcours, votre récit</div>
-        </div>
-
-        <div style={{ maxWidth: 440 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontStyle: 'italic',
-              fontSize: 34,
-              lineHeight: 1.25,
-              color: 'var(--beige)',
-              marginBottom: 24,
-            }}
-          >
-            Cette <em style={{ color: 'var(--terracotta-l)' }}>page</em> ne
-            figure pas dans votre récit.
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--sand)',
-              letterSpacing: 1.5,
-              textTransform: 'uppercase',
-            }}
-          >
-            <strong
-              style={{
-                color: 'var(--beige)',
-                display: 'block',
-                marginBottom: 4,
-                textTransform: 'none',
-                fontSize: 14,
-              }}
-            >
-              Erreur 404
-            </strong>
-            Page introuvable
-          </div>
-        </div>
-
-        <div className="brand-footer">
-          <span>© 2026 Find-One</span>
-        </div>
-      </div>
+      <AuthBrand>
+        <AuthBrandStatement
+          quote={
+            <>
+              Cette <em>page</em> ne figure pas dans votre récit.
+            </>
+          }
+          eyebrowTitle="Erreur 404"
+          eyebrowSub="Page introuvable"
+        />
+      </AuthBrand>
 
       <div className="auth-form-side">
         <div className="auth-form-inner">

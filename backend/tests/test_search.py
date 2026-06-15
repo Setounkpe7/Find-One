@@ -28,3 +28,47 @@ def test_jsearch_returns_results(client):
         response = client.get("/api/search/jobs?query=python+developer&page=1")
     assert response.status_code == 200
     assert len(response.json()) >= 1
+
+
+def test_search_jobs_handles_null_fields():
+    """JSearch returns items with null city/country/description; must not raise."""
+    from app.services.jsearch import search_jobs
+
+    payload = {
+        "data": [
+            {
+                "job_title": "Dev",
+                "employer_name": "Acme",
+                "job_city": None,
+                "job_country": None,
+                "job_apply_link": None,
+                "job_description": None,
+            }
+        ]
+    }
+    resp = MagicMock(status_code=200)
+    resp.json.return_value = payload
+    resp.raise_for_status.return_value = None
+
+    with patch("app.services.jsearch.httpx.get", return_value=resp):
+        out = search_jobs("dev", 1)
+
+    assert len(out) == 1
+    assert out[0]["company"] == "Acme"
+    assert out[0]["location"] == ""
+    assert out[0]["description"] == ""
+    assert out[0]["url"] == ""
+
+
+def test_search_jobs_joins_city_and_country():
+    from app.services.jsearch import search_jobs
+
+    payload = {"data": [{"job_title": "Dev", "job_city": "Paris", "job_country": "France"}]}
+    resp = MagicMock(status_code=200)
+    resp.json.return_value = payload
+    resp.raise_for_status.return_value = None
+
+    with patch("app.services.jsearch.httpx.get", return_value=resp):
+        out = search_jobs("dev", 1)
+
+    assert out[0]["location"] == "Paris, France"
