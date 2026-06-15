@@ -10,7 +10,7 @@ def test_list_templates_empty(client):
 
 def test_upload_template(client):
     fake_pdf = io.BytesIO(b"%PDF-1.4 fake pdf content")
-    with patch("app.api.templates.parse_template", return_value="Extracted content"):
+    with patch("app.api.templates.parse_template_bytes", return_value="Extracted content"):
         with patch("app.api.templates.upload_file", return_value="storage/templates/test.pdf"):
             response = client.post(
                 "/api/templates",
@@ -27,7 +27,7 @@ def test_upload_template(client):
 
 def test_delete_template(client):
     fake_pdf = io.BytesIO(b"%PDF-1.4 fake pdf content")
-    with patch("app.api.templates.parse_template", return_value="content"):
+    with patch("app.api.templates.parse_template_bytes", return_value="content"):
         with patch("app.api.templates.upload_file", return_value="path/to/file"):
             create = client.post(
                 "/api/templates",
@@ -52,3 +52,18 @@ def test_upload_template_rejects_invalid_extension(client):
         files={"file": ("resume.txt", fake_file, "text/plain")},
     )
     assert response.status_code == 400
+
+
+def test_upload_template_returns_502_when_storage_fails(client):
+    fake_pdf = io.BytesIO(b"%PDF-1.4 fake pdf content")
+    with patch("app.api.templates.parse_template_bytes", return_value="ok"):
+        with patch(
+            "app.api.templates.upload_file",
+            side_effect=Exception("Bucket not found"),
+        ):
+            response = client.post(
+                "/api/templates",
+                data={"name": "X", "job_type": "y"},
+                files={"file": ("cv.pdf", fake_pdf, "application/pdf")},
+            )
+    assert response.status_code == 502

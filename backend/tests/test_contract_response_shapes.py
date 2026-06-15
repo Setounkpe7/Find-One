@@ -140,7 +140,7 @@ def test_put_job_returns_frontend_keys(client):
 def test_list_templates_items_return_frontend_keys(client):
     import io
     fake_pdf = io.BytesIO(b"%PDF-1.4 fake")
-    with patch("app.api.templates.parse_template", return_value="content"):
+    with patch("app.api.templates.parse_template_bytes", return_value="content"):
         with patch("app.api.templates.upload_file", return_value="path/tpl.pdf"):
             client.post(
                 "/api/templates",

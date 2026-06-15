@@ -10,13 +10,22 @@ _ACCEPTED_ALGS = _ASYMMETRIC_ALGS | _SYMMETRIC_ALGS
 _jwks_client: PyJWKClient | None = None
 
 
+def _auth_base() -> str:
+    """Base URL of the project's Supabase auth service (no trailing slash)."""
+    return f"{settings.supabase_url.rstrip('/')}/auth/v1"
+
+
 def _get_jwks_client() -> PyJWKClient:
     """Cached JWKS client for asymmetric Supabase keys."""
     global _jwks_client
     if _jwks_client is None:
-        base = settings.supabase_url.rstrip("/")
-        _jwks_client = PyJWKClient(f"{base}/auth/v1/.well-known/jwks.json")
+        _jwks_client = PyJWKClient(f"{_auth_base()}/.well-known/jwks.json")
     return _jwks_client
+
+
+def _expected_issuer() -> str:
+    """The Supabase auth issuer this project trusts."""
+    return _auth_base()
 
 
 def validate_supabase_jwt(token: str) -> dict:
@@ -40,14 +49,16 @@ def validate_supabase_jwt(token: str) -> dict:
                 token,
                 signing_key,
                 algorithms=[alg],
-                options={"verify_aud": False},
+                audience="authenticated",
+                issuer=_expected_issuer(),
             )
         else:
             payload = pyjwt.decode(
                 token,
                 settings.supabase_jwt_secret,
                 algorithms=["HS256"],
-                options={"verify_aud": False},
+                audience="authenticated",
+                issuer=_expected_issuer(),
             )
 
         user_id = payload.get("sub")

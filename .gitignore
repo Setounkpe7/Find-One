@@ -37,3 +37,9 @@ security-reports/
 
 # Claude Code instructions — kept local, not shared via git
 CLAUDE.md
+
+# Graphify
+graphify-out/
+.graphify/
+*.graphify
+graphify.log

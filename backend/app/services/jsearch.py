@@ -19,12 +19,15 @@ def search_jobs(query: str, page: int = 1) -> list[dict]:
 
     jobs = []
     for item in data.get("data", []):
+        city = (item.get("job_city") or "").strip()
+        country = (item.get("job_country") or "").strip()
+        location = ", ".join(part for part in (city, country) if part)
         jobs.append({
-            "title": item.get("job_title", ""),
-            "company": item.get("employer_name", ""),
-            "location": item.get("job_city", "") + ", " + item.get("job_country", ""),
-            "url": item.get("job_apply_link", ""),
-            "description": item.get("job_description", "")[:500],
+            "title": item.get("job_title") or "",
+            "company": item.get("employer_name") or "",
+            "location": location,
+            "url": item.get("job_apply_link") or "",
+            "description": (item.get("job_description") or "")[:500],
             "source": "jsearch",
         })
     return jobs

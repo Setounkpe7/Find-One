@@ -1,3 +1,5 @@
+import os
+import tempfile
 import pdfplumber
 from docx import Document
 
@@ -23,3 +25,18 @@ def parse_template(file_path: str, file_type: str) -> str:
     if file_type == "docx":
         return parse_docx(file_path)
     raise ValueError(f"Unsupported file type: {file_type}")
+
+
+def parse_template_bytes(data: bytes, file_type: str) -> str:
+    """Parse a template held in memory by writing it to a short-lived temp file.
+
+    The pdf/docx readers need a filesystem path, so this centralises the
+    temp-file dance used both at upload (validation) and at generation (read-back
+    from storage)."""
+    with tempfile.NamedTemporaryFile(suffix=f".{file_type}", delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = tmp.name
+    try:
+        return parse_template(tmp_path, file_type)
+    finally:
+        os.unlink(tmp_path)

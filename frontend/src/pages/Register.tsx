@@ -5,6 +5,7 @@ import { authErrorMessage } from '../lib/authErrors'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Field } from '../components/ui/Field'
+import { AuthBrand } from '../components/ui/AuthBrand'
 
 const RESEND_COOLDOWN_SECONDS = 60
 
@@ -127,69 +128,29 @@ export default function Register() {
         </div>
       </div>
 
-      <div className="auth-brand">
-        <div style={{ textAlign: 'right' }}>
-          <div className="brand-logo">
-            Find<span>·</span>One
-          </div>
-          <div className="brand-logo-sub">Votre parcours, votre récit</div>
-        </div>
-
+      <AuthBrand align="right" footer="© 2026">
         <div>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 30,
-              fontWeight: 600,
-              lineHeight: 1.2,
-              color: 'var(--beige)',
-              marginBottom: 32,
-              maxWidth: 400,
-            }}
-          >
-            Ce qui vous attend <em style={{ color: 'var(--terracotta-l)', fontStyle: 'italic' }}>à l'intérieur</em>.
+          <div className="brand-features-heading">
+            Ce qui vous attend <em>à l'intérieur</em>.
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 400 }}>
+          <div className="brand-features">
             {[
               ['I.', 'Un tableau de bord clair', 'Chaque offre, chaque étape, chaque échange — rassemblés au même endroit.'],
               ['II.', 'Des CV & lettres sur mesure', 'Claude rédige une lettre adaptée à chaque offre à partir de votre profil.'],
               ['III.', 'Une recherche sans bruit', 'Les offres qui vous ressemblent, sans celles qui vous font perdre du temps.'],
             ].map(([num, title, body]) => (
-              <div key={num} style={{ display: 'flex', gap: 16 }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 28,
-                    fontStyle: 'italic',
-                    color: 'var(--terracotta-l)',
-                    minWidth: 44,
-                  }}
-                >
-                  {num}
-                </div>
+              <div key={num} className="brand-feature">
+                <div className="brand-feature-num">{num}</div>
                 <div>
-                  <h3
-                    style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: 17,
-                      color: 'var(--beige)',
-                      marginBottom: 4,
-                    }}
-                  >
-                    {title}
-                  </h3>
-                  <p style={{ fontSize: 13, color: 'var(--sand)', lineHeight: 1.55 }}>{body}</p>
+                  <h3 className="brand-feature-title">{title}</h3>
+                  <p className="brand-feature-body">{body}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
-
-        <div className="brand-footer" style={{ justifyContent: 'flex-end' }}>
-          <span>© 2026</span>
-        </div>
-      </div>
+      </AuthBrand>
     </div>
   )
 }
