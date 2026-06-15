@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
+import { authErrorMessage } from '../lib/authErrors'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Field } from '../components/ui/Field'
@@ -19,8 +20,8 @@ export default function Login() {
     try {
       await useAuthStore.getState().login(email, password)
       navigate('/')
-    } catch {
-      setError('Identifiants invalides')
+    } catch (err) {
+      setError(authErrorMessage(err, 'login'))
     } finally {
       setLoading(false)
     }
