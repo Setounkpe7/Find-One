@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from app.config import settings
+from app.limiter import limiter
 from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -11,7 +12,8 @@ def _get_supabase_client():
 
 
 @router.post("/register", response_model=TokenResponse)
-def register(body: RegisterRequest):
+@limiter.limit("20/minute")
+def register(request: Request, body: RegisterRequest):
     try:
         supabase = _get_supabase_client()
         result = supabase.auth.sign_up({"email": body.email, "password": body.password})
@@ -29,7 +31,8 @@ def register(body: RegisterRequest):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(body: LoginRequest):
+@limiter.limit("20/minute")
+def login(request: Request, body: LoginRequest):
     try:
         supabase = _get_supabase_client()
         result = supabase.auth.sign_in_with_password(

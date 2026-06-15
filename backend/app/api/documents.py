@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.limiter import limiter
 from app.deps import get_current_user
 from app.models.job_offer import JobOffer
 from app.models.template import Template
@@ -42,7 +43,9 @@ def _find_best_template(
 
 
 @router.post("/generate")
+@limiter.limit("30/hour")
 async def generate_document(
+    request: Request,
     body: GenerateDocRequest,
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
