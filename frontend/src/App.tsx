@@ -9,6 +9,7 @@ import JobDetail from './pages/JobDetail'
 import JobSearch from './pages/JobSearch'
 import Templates from './pages/Templates'
 import Profile from './pages/Profile'
+import NotFound from './pages/NotFound'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const session = useAuthStore((s) => s.session)
@@ -74,6 +75,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* Catch-all: unknown URLs render the 404 page instead of a blank screen. */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
